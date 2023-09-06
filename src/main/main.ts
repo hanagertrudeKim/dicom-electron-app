@@ -27,9 +27,10 @@ let mainWindow: BrowserWindow | null = null;
 
 // ipc main 호출
 ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+  const msgTemplate = (pingPong: string) => `메인ipc: ${pingPong}`;
   console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
+
+  event.reply('ipc-example', msgTemplate('메인 reply'));
 });
 
 if (process.env.NODE_ENV === 'production') {
