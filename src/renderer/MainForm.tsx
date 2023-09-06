@@ -3,12 +3,14 @@ import { useState } from 'react';
 import './MainForm.css';
 
 const defaultValues = {
-  name: '',
-  age: 0,
-  sex: '',
-  os: '',
-  favoriteNumber: 0,
-  address: '',
+  subj: '',
+  patient_id: 0,
+  patient_name: '',
+  ct_date: 0,
+  slice_thickness: '',
+  number_of_slices: 0,
+  study_description: '',
+  series_description: '',
 };
 
 function MainForm() {
@@ -42,56 +44,74 @@ function MainForm() {
       <form onSubmit={clickBtn}>
         <div className="form">
           <TextField
-            id="name-input"
-            name="name"
-            label="Name"
+            id="subject"
+            name="subject"
+            label="subject"
             type="text"
-            value={formValues.name}
+            value={formValues.subj}
             onChange={handleInputChange}
             className="input"
           />
           <TextField
-            id="age-input"
-            name="age"
-            label="Age"
-            type="text"
-            value={formValues.age}
+            id="patient-id-input"
+            name="patient-id"
+            label="patient-id"
+            type="number"
+            value={formValues.patient_id}
             onChange={handleInputChange}
             className="input"
           />
           <TextField
-            id="sex-input"
-            name="sex"
-            label="Sex"
+            id="patient-name-input"
+            name="patient-name"
+            label="patient-name"
             type="text"
-            value={formValues.sex}
+            value={formValues.patient_name}
             onChange={handleInputChange}
             className="input"
           />
           <TextField
-            id="os-input"
-            name="os"
-            label="Os"
-            type="text"
-            value={formValues.os}
+            id="ct-date-input"
+            name="ct-date"
+            label="ct-date"
+            type="number"
+            value={formValues.ct_date}
             onChange={handleInputChange}
             className="input"
           />
           <TextField
-            id="favoriteNumber-input"
-            name="favoriteNumber"
-            label="favoriteNumber"
+            id="slice-thinkness-input"
+            name="slice-thinkness"
+            label="slice-thinkness"
             type="text"
-            value={formValues.favoriteNumber}
+            value={formValues.slice_thickness}
             onChange={handleInputChange}
             className="input"
           />
           <TextField
-            id="address-input"
-            name="address"
-            label="address"
+            id="number-of-slice-input"
+            name="number-of-slice"
+            label="number-of-slice"
+            type="number"
+            value={formValues.number_of_slices}
+            onChange={handleInputChange}
+            className="input"
+          />
+          <TextField
+            id="study-description-input"
+            name="study-description"
+            label="study-description"
             type="text"
-            value={formValues.address}
+            value={formValues.study_description}
+            onChange={handleInputChange}
+            className="input"
+          />
+          <TextField
+            id="series-description-input"
+            name="series-description"
+            label="series-description"
+            type="text"
+            value={formValues.series_description}
             onChange={handleInputChange}
             className="input"
           />
