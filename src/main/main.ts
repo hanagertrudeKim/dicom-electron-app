@@ -12,6 +12,7 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { spawn } from 'child_process';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -25,12 +26,22 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-// ipc main 호출
+// ipc-renderer 에서 form data 받아오기
 ipcMain.on('icp-form-data', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `메인ipc: ${pingPong}`;
-  console.log(msgTemplate(arg));
+  console.log('arg:', arg);
 
-  event.reply('icp-form-data', msgTemplate('메인 reply'));
+  const resultPython = spawn('python3', ['src/main/main.py', 'hello', '20']);
+
+  resultPython.stdout.on('data', (result) => {
+    console.log('python result:', result.toString());
+  });
+
+  resultPython.stderr.on('data', (error) => {
+    console.log(error.toString());
+  });
+
+  // 다시 ipc-renderer로 응답 보내기
+  event.reply('icp-form-data', '메인ipc reply');
 });
 
 if (process.env.NODE_ENV === 'production') {

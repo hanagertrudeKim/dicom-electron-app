@@ -25,11 +25,12 @@ function MainForm() {
 
   const clickBtn = (e: any) => {
     e.preventDefault();
+    // main ipc로 form data 보내기
     window.electron.ipcRenderer.sendMessage(
       'icp-form-data',
       JSON.stringify(formValues)
     );
-
+    // main ipc에서 응답 받기
     window.electron.ipcRenderer.once('icp-form-data', (arg) => {
       console.log('ipc-renderer:', arg);
     });
