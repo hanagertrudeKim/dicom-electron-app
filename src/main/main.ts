@@ -26,11 +26,11 @@ class AppUpdater {
 let mainWindow: BrowserWindow | null = null;
 
 // ipc main 호출
-ipcMain.on('ipc-example', async (event, arg) => {
+ipcMain.on('icp-form-data', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `메인ipc: ${pingPong}`;
   console.log(msgTemplate(arg));
 
-  event.reply('ipc-example', msgTemplate('메인 reply'));
+  event.reply('icp-form-data', msgTemplate('메인 reply'));
 });
 
 if (process.env.NODE_ENV === 'production') {
