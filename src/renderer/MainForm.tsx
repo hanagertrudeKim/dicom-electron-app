@@ -1,6 +1,13 @@
-import { Button, TextField } from '@mui/material';
+import {
+  AppBar,
+  Container,
+  CssBaseline,
+  Grid,
+  TextField,
+  Toolbar,
+  Typography,
+} from '@mui/material';
 import { useState } from 'react';
-import './MainForm.css';
 
 const defaultValues = {
   subj: '',
@@ -39,90 +46,122 @@ function MainForm() {
   };
 
   return (
-    <div className="wrap">
-      <div className="title">Form Example</div>
-      <form onSubmit={clickBtn}>
-        <div className="form">
-          <TextField
-            id="subject"
-            name="subject"
-            label="subject"
-            type="text"
-            value={formValues.subj}
-            onChange={handleInputChange}
-            className="input"
-          />
-          <TextField
-            id="patient-id-input"
-            name="patient-id"
-            label="patient-id"
-            type="number"
-            value={formValues.patient_id}
-            onChange={handleInputChange}
-            className="input"
-          />
-          <TextField
-            id="patient-name-input"
-            name="patient-name"
-            label="patient-name"
-            type="text"
-            value={formValues.patient_name}
-            onChange={handleInputChange}
-            className="input"
-          />
-          <TextField
-            id="ct-date-input"
-            name="ct-date"
-            label="ct-date"
-            type="number"
-            value={formValues.ct_date}
-            onChange={handleInputChange}
-            className="input"
-          />
-          <TextField
-            id="slice-thinkness-input"
-            name="slice-thinkness"
-            label="slice-thinkness"
-            type="text"
-            value={formValues.slice_thickness}
-            onChange={handleInputChange}
-            className="input"
-          />
-          <TextField
-            id="number-of-slice-input"
-            name="number-of-slice"
-            label="number-of-slice"
-            type="number"
-            value={formValues.number_of_slices}
-            onChange={handleInputChange}
-            className="input"
-          />
-          <TextField
-            id="study-description-input"
-            name="study-description"
-            label="study-description"
-            type="text"
-            value={formValues.study_description}
-            onChange={handleInputChange}
-            className="input"
-          />
-          <TextField
-            id="series-description-input"
-            name="series-description"
-            label="series-description"
-            type="text"
-            value={formValues.series_description}
-            onChange={handleInputChange}
-            className="input"
-          />
-        </div>
-        <div className="button">
-          <Button variant="contained" color="primary" type="submit">
-            Submit
-          </Button>
-        </div>
-      </form>
-    </div>
+    <>
+      <CssBaseline />
+      <AppBar
+        position="absolute"
+        color="default"
+        elevation={0}
+        sx={{
+          position: 'relative',
+          borderBottom: (t) => `1px solid ${t.palette.divider}`,
+        }}
+      >
+        <Toolbar>
+          <Typography variant="h6" color="inherit" noWrap>
+            DICOM Form
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Container
+        component="main"
+        maxWidth="md"
+        sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
+      >
+        <Typography component="h1" variant="h4" align="center">
+          Checkout
+        </Typography>
+        <form onSubmit={clickBtn}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id="firstName"
+                name="firstName"
+                label="First name"
+                fullWidth
+                autoComplete="given-name"
+                variant="standard"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id="lastName"
+                name="lastName"
+                label="Last name"
+                fullWidth
+                autoComplete="family-name"
+                variant="standard"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                id="address1"
+                name="address1"
+                label="Address line 1"
+                fullWidth
+                autoComplete="shipping address-line1"
+                variant="standard"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                id="address2"
+                name="address2"
+                label="Address line 2"
+                fullWidth
+                autoComplete="shipping address-line2"
+                variant="standard"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id="city"
+                name="city"
+                label="City"
+                fullWidth
+                autoComplete="shipping address-level2"
+                variant="standard"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                id="state"
+                name="state"
+                label="State/Province/Region"
+                fullWidth
+                variant="standard"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id="zip"
+                name="zip"
+                label="Zip / Postal code"
+                fullWidth
+                autoComplete="shipping postal-code"
+                variant="standard"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id="country"
+                name="country"
+                label="Country"
+                fullWidth
+                autoComplete="shipping country"
+                variant="standard"
+              />
+            </Grid>
+          </Grid>
+        </form>
+      </Container>
+    </>
   );
 }
 
