@@ -1,7 +1,7 @@
 body {
   position: relative;
   font-family: sans-serif;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 li {

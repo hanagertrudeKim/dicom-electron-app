@@ -10,34 +10,13 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import styled from '@emotion/styled';
-
-const defaultValues = {
-  subj: '',
-  patient_id: 0,
-  patient_name: '',
-  ct_date: 0,
-  slice_thickness: '',
-  number_of_slices: 0,
-  study_description: '',
-  series_description: '',
-};
-
-const VisuallyHiddenInput = styled('input')`
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  white-space: nowrap;
-  width: 1px;
-  margin-bottom: 50px;
-`;
+import * as S from './MainForm.styled';
+import defaultValues from './model';
 
 function MainForm() {
-  const [formValues, setFormValues] = useState(defaultValues);
+  const [formValues, setFormValues] = useState<
+    defaultValues | Record<string, never>
+  >({});
 
   const handleInputChange = (e: any) => {
     e.preventDefault();
@@ -87,107 +66,123 @@ function MainForm() {
           component="h1"
           variant="h4"
           align="center"
-          sx={{ 'margin-bottom': '150px' }}
+          sx={{ 'margin-bottom': '120px' }}
         >
           Checkout
         </Typography>
-
-        <Button
-          component="label"
-          variant="contained"
-          startIcon={<CloudUploadIcon />}
-          href="#file-up`load"
-        >
-          Upload dicom file
-          <VisuallyHiddenInput type="file" />
-        </Button>
         <form onSubmit={clickBtn}>
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+            href="#file-up`load"
+            sx={{ marginBottom: '70px' }}
+          >
+            Upload dicom file
+            <S.VisuallyHiddenInput type="file" />
+          </Button>
           <Grid container spacing={7}>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
                 required
-                id="firstName"
-                name="firstName"
-                label="First name"
+                id="subj"
+                name="subj"
+                label="Subject"
                 fullWidth
-                autoComplete="given-name"
                 variant="standard"
+                onChange={handleInputChange}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 required
-                id="lastName"
-                name="lastName"
-                label="Last name"
+                id="patient_name"
+                name="patient_name"
+                label="Patient Name"
                 fullWidth
-                autoComplete="family-name"
                 variant="standard"
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id="patient_id"
+                name="patient_id"
+                label="Patient Id"
+                fullWidth
+                variant="standard"
+                onChange={handleInputChange}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                required
-                id="address1"
-                name="address1"
-                label="Address line 1"
+                id="ct_date"
+                name="ct_date"
+                label="CT Date"
                 fullWidth
-                autoComplete="shipping address-line1"
                 variant="standard"
+                onChange={handleInputChange}
+                type="date"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id="slice_thickness"
+                name="slice-_hickness"
+                label="Slice Thickness"
+                fullWidth
+                variant="standard"
+                onChange={handleInputChange}
+                type="number"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                id="number_of_slices"
+                name="number-_of_slices"
+                label="Number Of Slices"
+                fullWidth
+                variant="standard"
+                onChange={handleInputChange}
+                type="number"
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                id="address2"
-                name="address2"
-                label="Address line 2"
+                id="study_description"
+                name="study_description"
+                label="Study Description"
                 fullWidth
-                autoComplete="shipping address-line2"
                 variant="standard"
+                onChange={handleInputChange}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
-                required
-                id="city"
-                name="city"
-                label="City"
-                fullWidth
-                autoComplete="shipping address-level2"
-                variant="standard"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                id="state"
-                name="state"
-                label="State/Province/Region"
+                id="series_description"
+                name="series_description"
+                label="Series Description"
                 fullWidth
                 variant="standard"
+                onChange={handleInputChange}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                id="zip"
-                name="zip"
-                label="Zip / Postal code"
-                fullWidth
-                autoComplete="shipping postal-code"
-                variant="standard"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                id="country"
-                name="country"
-                label="Country"
-                fullWidth
-                autoComplete="shipping country"
-                variant="standard"
-              />
-            </Grid>
+            <Button
+              variant="contained"
+              type="submit"
+              sx={{
+                mt: 3,
+                ml: 1,
+                display: 'absolute',
+                marginLeft: 'auto',
+                marginTop: '60px',
+              }}
+            >
+              submit
+            </Button>
           </Grid>
         </form>
       </Container>
