@@ -28,14 +28,13 @@ let mainWindow: BrowserWindow | null = null;
 
 // ipc-renderer 에서 form data 받아오기
 ipcMain.on('icp-form-data', async (event, arg) => {
-  console.log('arg:', arg);
+  console.log(arg);
 
+  // 파이썬 스크립트 읽기
   const resultPython = spawn('python3', ['src/main/main.py', 'hello', '20']);
-
   resultPython.stdout.on('data', (result) => {
     console.log('python result:', result.toString());
   });
-
   resultPython.stderr.on('data', (error) => {
     console.log(error.toString());
   });

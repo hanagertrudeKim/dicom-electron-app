@@ -30,27 +30,29 @@ function MainForm() {
   const handleFileUpload = (e: any) => {
     const file = e.target.files[0];
 
-    setFormValues({
-      ...formValues,
-      [e.target.name]: file,
-    });
+    for (let i = 0; i < 1; i += 1) {
+      const fileReader = new FileReader();
 
-    // for (let i = 0; i < 1; i += 1) {
-    //   const fileReader = new FileReader();
-
-    //   fileReader.readAsDataURL(file);
-    //   fileReader.onload = (dicomFile: any) => {
-    //   };
-    // }
+      fileReader.readAsDataURL(file);
+      fileReader.onload = (dicomFile: any) => {
+        setFormValues({
+          ...formValues,
+          [e.target.name]: dicomFile.target.result,
+        });
+      };
+    }
   };
 
   const clickBtn = (e: any) => {
     e.preventDefault();
+    console.log(formValues);
+
     // main ipc로 form data 보내기
     window.electron.ipcRenderer.sendMessage(
       'icp-form-data',
       JSON.stringify(formValues)
     );
+
     // main ipc에서 응답 받기
     window.electron.ipcRenderer.once('icp-form-data', (arg) => {
       console.log('ipc-renderer:', arg);
