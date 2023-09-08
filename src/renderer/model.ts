@@ -7,4 +7,5 @@ export default interface defaultValues {
   number_of_slices: number;
   study_description: string;
   series_description: string;
+  dicom_file: any;
 }

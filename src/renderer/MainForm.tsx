@@ -27,6 +27,23 @@ function MainForm() {
     });
   };
 
+  const handleFileUpload = (e: any) => {
+    const file = e.target.files[0];
+
+    setFormValues({
+      ...formValues,
+      [e.target.name]: file,
+    });
+
+    // for (let i = 0; i < 1; i += 1) {
+    //   const fileReader = new FileReader();
+
+    //   fileReader.readAsDataURL(file);
+    //   fileReader.onload = (dicomFile: any) => {
+    //   };
+    // }
+  };
+
   const clickBtn = (e: any) => {
     e.preventDefault();
     // main ipc로 form data 보내기
@@ -79,7 +96,12 @@ function MainForm() {
             sx={{ marginBottom: '70px' }}
           >
             Upload dicom file
-            <S.VisuallyHiddenInput type="file" />
+            <S.VisuallyHiddenInput
+              type="file"
+              name="dicom_file"
+              // accept=".sh,application/x-executable"
+              onChange={handleFileUpload}
+            />
           </Button>
           <Grid container spacing={7}>
             <Grid item xs={12}>
