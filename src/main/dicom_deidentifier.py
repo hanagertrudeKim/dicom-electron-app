@@ -108,21 +108,16 @@ def get_dir_depth(path, depth=0):
 
 # dicom이 적절한 디렉토리 위치에 있는지 검사하고 맞다면 true, 아니라면 error
 def run_batch_or_not(path, depth=0):
-    for f in os.listdir(path):
-        if f == "DICOM":
-            if depth == 0:
-                return False
-            elif depth == 1:
-                return True
-            else:
-                logger.error("Invalid src path")
-                quit()
-        else:
-            if depth < 2:
-                return run_batch_or_not(os.path.join(path, f), depth + 1)
-            else:
-                logger.error("Invalid src path")
-                quit()
+    if not os.path.isdir(path):
+        return False
+
+    max_depth = depth
+    for entry in os.listdir(path):
+        dir_path = os.path.join(path, entry)
+        if os.path.isdir(dir_path):
+            max_depth = max(max_depth, run_batch_or_not(dir_path, depth + 1))
+
+    return max_depth
 
 
 # dicom파일의 경로를 추출하여 리스트화함 (zip 파일일 경우는 반환 x)
