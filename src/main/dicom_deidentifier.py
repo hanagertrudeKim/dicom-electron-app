@@ -12,8 +12,8 @@ Input
 Output
 1) De-identified DICOM folder in given destination folder path
 
-python ./dicom_deidentifier_retro.py ./KU39009_20220921 ./deid/KU39009_20220921
-python ./dicom_deidentifier_retro.py /k/Scott_CT_Data/416192_190710/ -f ./Util/output/KU_ID_mapping.csv
+python3 ./dicom_deidentifier_retro.py ./KU39009_20220921 ./deid/KU39009_20220921
+python3 ./dicom_deidentifier_retro.py /k/Scott_CT_Data/416192_190710/ -f ./Util/output/KU_ID_mapping.csv
 """
 import os
 import re
@@ -87,11 +87,13 @@ TAGS_TO_ANONYMIZE = [
 ]
 
 
+# 주어진 CSV파일 읽어서 MRN (Medical Record Number), ID (Identifier)로 이루어진 딕셔너리를 생성하는 함수
 def get_subj_from_csv(path) -> Dict[str, str]:
     df = pd.read_csv(path)
     return {str(mrn): str(id) for mrn, id in zip(df.mrn.to_list(), df.id.to_list())}
 
 
+# 디렉토리의 깊이를 계산하는 함수
 def get_dir_depth(path, depth=0):
     if not os.path.isdir(path):
         return depth
@@ -104,6 +106,7 @@ def get_dir_depth(path, depth=0):
     return max_depth
 
 
+# dicom이 적절한 디렉토리 위치에 있는지 검사하고 맞다면 true, 아니라면 error
 def run_batch_or_not(path, depth=0):
     for f in os.listdir(path):
         if f == "DICOM":
@@ -122,6 +125,7 @@ def run_batch_or_not(path, depth=0):
                 quit()
 
 
+# dicom파일의 경로를 추출하여 리스트화함 (zip 파일일 경우는 반환 x)
 def get_dcm_paths_from_dcm_dir(src_dcm_dir: str) -> List[Path]:
     dcm_paths = []
     for base, _, files in os.walk(src_dcm_dir):
@@ -146,6 +150,7 @@ def get_dcm_paths_from_dcm_dir(src_dcm_dir: str) -> List[Path]:
     return dcm_paths
 
 
+# 입력값인 src_dcm_dir와 subj를 사용하여 De-identification 작업을 위한 디렉터리 구조를 생성하고, 생성된 디렉터리의 경로를 반환
 def prepare_deid_dcm_dir(src_dcm_dir, subj) -> str:
     dcm_dir_root = dirname(src_dcm_dir)
     deid_dcm_dir_material = basename(dcm_dir_root).split("_")
@@ -166,17 +171,19 @@ def prepare_deid_dcm_dir(src_dcm_dir, subj) -> str:
     return deid_dcm_dir_child_path
 
 
+# 디렉토리안의 dicom파일 개수 세는 함수
 def get_file_count(src_dcm_dir) -> int:
-    if get_dir_depth(src_dcm_dir) > 1:
+    if get_dir_depth(src_dcm_dir) > 1:  # 1이상의 중첩 디렉토리라면 종료
         logger.error(f"Check {src_dcm_dir} structure")
     else:
         file_count = 0
-        for _, _, files in os.walk(src_dcm_dir):
+        for _, _, files in os.walk(src_dcm_dir):  # 아니라면 dicom파일 세기
             for file in files:
                 file_count += 1
         return file_count
 
 
+# dicom_path, subj를 입력받아 DICOM파일들을 분석하여 시리즈 메타데이터와 파일 경로를 추출하고, 딕셔너리로 반환
 def analyze_dcm_series(dcm_paths, subj):
     series_metadata_dict = {}
     series_path_dict = {}
@@ -228,6 +235,7 @@ def analyze_dcm_series(dcm_paths, subj):
     return series_metadata_dict, series_path_dict
 
 
+# 위에 추출된 메타 데이터를 통하여 csv로 저장하는 함수
 def export_series_metadata_to_csv(series_metadata_dict: Dict, deid_dcm_dir: Path):
     with open(
         os.path.join(deid_dcm_dir, "dcm_metadata.csv"), "w", newline=""
@@ -249,6 +257,7 @@ def export_series_metadata_to_csv(series_metadata_dict: Dict, deid_dcm_dir: Path
             writer.writerow(series_metadata_dict[series_uid])
 
 
+# 시리즈의 descripttion 공백을 제거하는 등 문자열을 가공하고 변환
 def parse_series_description(series_description: str) -> str:
     series_description = series_description.lstrip()
     series_description = series_description.rstrip()
@@ -257,6 +266,7 @@ def parse_series_description(series_description: str) -> str:
     return series_description
 
 
+# dicom파일 deidentifier을 수행하는 함수
 def run_deidentifier(src_path: Path):
     mrn_id_mapping = get_subj_from_csv(csv_path) if csv_path else {}
     subj = basename(src_path).split("_")[0]
@@ -282,12 +292,14 @@ def run_deidentifier(src_path: Path):
             deidentify(dcm_path, deid_dcm_dir, subj)
 
 
+# 다중 dicom 파일을 일괄 처리하는 함수?
 def run_deidentifier_batch(src_path):
     src_dcm_dirs = os.listdir(src_path)
     for src_dcm_dir in tqdm(src_dcm_dirs, desc=" Scans", position=0):
         run_deidentifier(os.path.join(src_path, src_dcm_dir))
 
 
+# De-identification하는 함수
 def deidentify(dcm_path: Path, deid_dcm_dir: Path, subj: str):
     dcm = dcmread(dcm_path)
     try:
@@ -316,6 +328,7 @@ def deidentify(dcm_path: Path, deid_dcm_dir: Path, subj: str):
     dcm.save_as(deid_dcm_path)
 
 
+# 단일로 dicom 파일을 처리할지, 다중으로 dicom 파일을 일괄 처리할지 결정하는 조건문
 if __name__ == "__main__":
     if run_batch_or_not(src_path):
         run_deidentifier_batch(src_path)
