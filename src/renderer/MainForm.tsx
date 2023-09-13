@@ -8,7 +8,7 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import * as S from './MainForm.styled';
 import defaultValues from './model';
@@ -17,6 +17,15 @@ function MainForm() {
   const [formValues, setFormValues] = useState<
     defaultValues | Record<string, never>
   >({});
+  const [files, setFiles] = useState<FileList | null | undefined>();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (inputRef.current !== null) {
+      inputRef.current.setAttribute('directory', 'true');
+      inputRef.current.setAttribute('webkitdirectory', 'true');
+    }
+  }, [inputRef]);
 
   const handleInputChange = (e: any) => {
     e.preventDefault();
@@ -27,32 +36,19 @@ function MainForm() {
     });
   };
 
-  const handleFileUpload = (e: any) => {
-    const file = e.target.files[0];
-
-    for (let i = 0; i < 1; i += 1) {
-      const fileReader = new FileReader();
-
-      fileReader.readAsDataURL(file);
-      fileReader.onload = (dicomFile: any) => {
-        setFormValues({
-          ...formValues,
-          [e.target.name]: dicomFile.target.result,
-        });
-      };
-    }
+  const handleFileUpload = () => {
+    setFiles(inputRef?.current?.files);
+    console.log(inputRef);
   };
 
   const clickBtn = (e: any) => {
     e.preventDefault();
-    console.log(formValues);
-
+    // console.log(formValues);
     // main ipc로 form data 보내기
     window.electron.ipcRenderer.sendMessage(
       'icp-form-data',
       JSON.stringify(formValues)
     );
-
     // main ipc에서 응답 받기
     window.electron.ipcRenderer.once('icp-form-data', (arg) => {
       console.log('ipc-renderer:', arg);
@@ -100,11 +96,12 @@ function MainForm() {
             Upload dicom file
             <S.VisuallyHiddenInput
               type="file"
-              name="dicom_file"
+              ref={inputRef}
               // accept=".sh,application/x-executable"
               onChange={handleFileUpload}
             />
           </Button>
+          <div>{files?.length} files uploaded</div>
           <Grid container spacing={7}>
             <Grid item xs={12}>
               <TextField
