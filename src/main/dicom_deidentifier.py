@@ -188,44 +188,27 @@ def analyze_dcm_series(dcm_paths, subj):
             series_uid = dcm.SeriesInstanceUID
         except:
             logger.error(f"{dcm_path} - No SeriesInstanceUID")
-            return
+            continue
 
         if series_uid not in series_metadata_dict:
-            series_metadata_dict[series_uid] = {}
+            # Initialize the dictionary for this series_uid
+            series_metadata_dict[series_uid] = {
+                'subj': "",
+                "ct_date": "",
+                "MRN": "",
+            }
             series_metadata_dict[series_uid]["subj"] = subj
-            try:
-                series_metadata_dict[series_uid][
-                    "study_description"
-                ] = dcm.StudyDescription
-            except:
-                series_metadata_dict[series_uid]["study_description"] = ""
-            try:
-                series_metadata_dict[series_uid][
-                    "series_description"
-                ] = dcm.SeriesDescription
-            except:
-                series_metadata_dict[series_uid]["series_description"] = ""
-            try:
-                series_metadata_dict[series_uid]["slice_thickness"] = dcm.SliceThickness
-            except:
-                series_metadata_dict[series_uid]["slice_thickness"] = ""
+            series_path_dict[series_uid] = [dcm_path]
+        else:
+            series_path_dict[series_uid].append(dcm_path)
             try:
                 series_metadata_dict[series_uid]["ct_date"] = dcm.AcquisitionDate
             except:
                 series_metadata_dict[series_uid]["ct_date"] = ""
             try:
-                series_metadata_dict[series_uid]["patient_id"] = dcm.PatientID
+                series_metadata_dict[series_uid]["MRN"] = dcm.PatientID
             except:
-                series_metadata_dict[series_uid]["patient_id"] = ""
-            try:
-                series_metadata_dict[series_uid]["patient_name"] = dcm.PatientName
-            except:
-                series_metadata_dict[series_uid]["patient_name"] = ""
-            series_metadata_dict[series_uid]["number_of_slices"] = 1
-            series_path_dict[series_uid] = [dcm_path]
-        else:
-            series_metadata_dict[series_uid]["number_of_slices"] += 1
-            series_path_dict[series_uid].append(dcm_path)
+                series_metadata_dict[series_uid]["MRN"] = ""
 
     return series_metadata_dict, series_path_dict
 
@@ -237,13 +220,8 @@ def export_series_metadata_to_csv(series_metadata_dict: Dict, deid_dcm_dir: Path
     ) as csv_output:
         csv_columns = [
             "subj",
-            "patient_id",
-            "patient_name",
+            "MRN",
             "ct_date",
-            "slice_thickness",
-            "number_of_slices",
-            "study_description",
-            "series_description",
         ]
         writer = csv.DictWriter(csv_output, fieldnames=csv_columns)
         writer.writeheader()
@@ -264,6 +242,7 @@ def parse_series_description(series_description: str) -> str:
 # dicom파일 deidentifier을 수행하는 함수
 def run_deidentifier(src_path: Path):
     mrn_id_mapping = get_subj_from_csv(csv_path) if csv_path else {}
+
     subj = basename(src_path).split("_")[0]
     subj = mrn_id_mapping[subj] if mrn_id_mapping else subj
 
@@ -310,7 +289,11 @@ def deidentify(dcm_path: Path, deid_dcm_dir: Path, subj: str):
         os.mkdir(deid_series_dir_path)
 
     # Overwrite PatientID, PatientName, Patient BirthDate
-    dcm.PatientID = dcm.PatientName = subj
+    dcm.PatientID = subj
+    # Modify PatientName to Subj_CTDate
+    ct_date = dcm.AcquisitionDate
+    dcm.PatientName = f"{subj}_{ct_date}"
+
     dcm.PatientBirthDate = dcm.PatientBirthDate[:-4] + "0101"
 
     # Remove PHI, private tags
