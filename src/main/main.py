@@ -1,9 +1,10 @@
 import sys
 
+if len(sys.argv) != 2:
+    print("Usage: python your_python_script.py folder_path")
+    sys.exit(1)
 
-def getName(name, age):
-    print(name + " : " + age)
+folder_path = sys.argv[1]
 
-
-if __name__ == '__main__':
-    getName(sys.argv[1], sys.argv[2])
+# 폴더 경로를 사용한 작업 수행
+print(f"Selected folder path: {folder_path}")
