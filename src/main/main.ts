@@ -35,7 +35,7 @@ async function selectFolder() {
     console.log(folderPath);
 
     // 폴더 경로를 파이썬 스크립트로 전달
-    const pythonScript = path.join(__dirname, './main.py');
+    const pythonScript = path.join(__dirname, './dicom_deidentifier.py');
     const pythonProcess = spawn('python3', [pythonScript, folderPath]);
 
     pythonProcess.stdout.on('data', (data) => {

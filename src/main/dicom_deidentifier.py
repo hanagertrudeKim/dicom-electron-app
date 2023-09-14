@@ -1,19 +1,5 @@
 """
 Python script to de-identify DICOM images
-
-Requirements
-1) DICOM folder name should be SUBJ_CTDATE: ex) KU39009_20220921
-
-Input
-1) Raw DICOM folder path (can be a parent folder path of multiple DICOM folders)
-2) destination folder path with -d option
-3) ID Mapping csv path with -f option
-
-Output
-1) De-identified DICOM folder in given destination folder path
-
-python3 ./dicom_deidentifier_retro.py ./KU39009_20220921 ./deid/KU39009_20220921
-python3 ./dicom_deidentifier_retro.py /k/Scott_CT_Data/416192_190710/ -f ./Util/output/KU_ID_mapping.csv
 """
 import os
 import re
@@ -26,6 +12,15 @@ import pandas as pd
 from pydicom import dcmread
 from tqdm import tqdm
 from loguru import logger
+import sys
+
+if len(sys.argv) != 2:
+    print("not valid folder path")
+    sys.exit(1)
+
+folder_path = sys.argv[1]
+terminal_command = f"python3 ./dicom_deidentifier.py {folder_path}"
+os.system(terminal_command)
 
 # Setup Parser
 parser = argparse.ArgumentParser(description="De-Identifier")
