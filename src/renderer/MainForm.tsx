@@ -9,15 +9,14 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import * as S from './MainForm.styled';
+// import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+// import * as S from './MainForm.styled';
 import defaultValues from './model';
 
 function MainForm() {
   const [formValues, setFormValues] = useState<
     defaultValues | Record<string, never>
   >({});
-  const [files, setFiles] = useState<FileList | null | undefined>();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -36,22 +35,30 @@ function MainForm() {
     });
   };
 
-  const handleFileUpload = () => {
-    setFiles(inputRef?.current?.files);
-    console.log(inputRef);
-  };
+  // const handleFileUpload = (e: any) => {
+  //   console.log(inputRef);
+  //   setFormValues({
+  //     ...formValues,
+  //     [e.target.name]: inputRef?.current?.files,
+  //   });
+  // };
+
+  function selectFolder() {
+    console.log('실행');
+    window.electron.ipcRenderer.sendMessage('ipc-dicom');
+  }
 
   const clickBtn = (e: any) => {
     e.preventDefault();
-    // console.log(formValues);
+    console.log(formValues);
     // main ipc로 form data 보내기
     window.electron.ipcRenderer.sendMessage(
-      'icp-form-data',
+      'ipc-dicom',
       JSON.stringify(formValues)
     );
     // main ipc에서 응답 받기
-    window.electron.ipcRenderer.once('icp-form-data', (arg) => {
-      console.log('ipc-renderer:', arg);
+    window.electron.ipcRenderer.once('ipc-dicom', (arg) => {
+      console.log('ipc-dicom-renderer:', arg);
     });
   };
 
@@ -86,22 +93,24 @@ function MainForm() {
           Checkout
         </Typography>
         <form onSubmit={clickBtn}>
-          <Button
+          <Button onClick={() => selectFolder()}>Select Folder</Button>
+          {/* <Button
             component="label"
             variant="contained"
             startIcon={<CloudUploadIcon />}
             href="#file-up`load"
             sx={{ marginBottom: '70px' }}
           >
-            Upload dicom file
+            Upload dicom folder
             <S.VisuallyHiddenInput
               type="file"
               ref={inputRef}
+              name="dicom"
               // accept=".sh,application/x-executable"
               onChange={handleFileUpload}
             />
-          </Button>
-          <div>{files?.length} files uploaded</div>
+          </Button> */}
+          <div>{formValues?.dicom?.length} files uploaded</div>
           <Grid container spacing={7}>
             <Grid item xs={12}>
               <TextField
@@ -109,83 +118,6 @@ function MainForm() {
                 id="subj"
                 name="subj"
                 label="Subject"
-                fullWidth
-                variant="standard"
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                id="patient_name"
-                name="patient_name"
-                label="Patient Name"
-                fullWidth
-                variant="standard"
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                id="patient_id"
-                name="patient_id"
-                label="Patient Id"
-                fullWidth
-                variant="standard"
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                id="ct_date"
-                name="ct_date"
-                label="CT Date"
-                fullWidth
-                variant="standard"
-                onChange={handleInputChange}
-                type="date"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                id="slice_thickness"
-                name="slice-_hickness"
-                label="Slice Thickness"
-                fullWidth
-                variant="standard"
-                onChange={handleInputChange}
-                type="number"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                id="number_of_slices"
-                name="number-_of_slices"
-                label="Number Of Slices"
-                fullWidth
-                variant="standard"
-                onChange={handleInputChange}
-                type="number"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                id="study_description"
-                name="study_description"
-                label="Study Description"
-                fullWidth
-                variant="standard"
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                id="series_description"
-                name="series_description"
-                label="Series Description"
                 fullWidth
                 variant="standard"
                 onChange={handleInputChange}

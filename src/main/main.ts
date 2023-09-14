@@ -1,5 +1,4 @@
 /* eslint global-require: off, no-console: off, promise/always-return: off */
-
 /**
  * This module executes inside of electron's main process. You can start
  * electron renderer process from here and communicate with the other processes
@@ -9,7 +8,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { spawn } from 'child_process';
@@ -24,24 +23,39 @@ class AppUpdater {
   }
 }
 
-let mainWindow: BrowserWindow | null = null;
+let mainWindow: any;
 
-// ipc-renderer 에서 form data 받아오기
-ipcMain.on('icp-form-data', async (event, arg) => {
-  console.log(arg);
-
-  // 파이썬 스크립트 읽기
-  const resultPython = spawn('python3', ['src/main/main.py', 'hello', '20']);
-  resultPython.stdout.on('data', (result) => {
-    console.log('python result:', result.toString());
-  });
-  resultPython.stderr.on('data', (error) => {
-    console.log(error.toString());
+async function selectFolder() {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
   });
 
-  // 다시 ipc-renderer로 응답 보내기
-  event.reply('icp-form-data', '메인ipc reply');
+  if (!result.canceled && result.filePaths.length > 0) {
+    const folderPath = result.filePaths[0];
+    console.log(folderPath);
+
+    // 폴더 경로를 파이썬 스크립트로 전달
+    const pythonScript = path.join(__dirname, './main.py');
+    const pythonProcess = spawn('python3', [pythonScript, folderPath]);
+
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(`Python stdout: ${data}`);
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+  }
+}
+
+ipcMain.on('ipc-dicom', () => {
+  selectFolder();
 });
+
+// ipc-dicom renderer 에서 dicom data 수신
+// ipcMain.on('ipc-dicom', async (event, arg) => {
+//   console.log(arg);
+// });
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -114,7 +128,7 @@ const createWindow = async () => {
   menuBuilder.buildMenu();
 
   // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
+  mainWindow.webContents.setWindowOpenHandler((edata: any) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
@@ -123,10 +137,6 @@ const createWindow = async () => {
   // eslint-disable-next-line
   new AppUpdater();
 };
-
-/**
- * Add event listeners...
- */
 
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
