@@ -25,37 +25,48 @@ class AppUpdater {
 
 let mainWindow: any;
 
+let folderPath: string;
+
+function runPython() {
+  // 폴더 경로를 파이썬 스크립트로 전달
+  const pythonScript = path.join(__dirname, './dicom_deidentifier.py');
+  const pythonProcess = spawn('python3', [pythonScript, folderPath]);
+
+  pythonProcess.stdout.on('data', (data) => {
+    console.log(`Python stdout: ${data}`);
+  });
+
+  pythonProcess.stderr.on('data', (data) => {
+    console.error(`Python stderr: ${data}`);
+  });
+}
+
 async function selectFolder() {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory'],
   });
 
   if (!result.canceled && result.filePaths.length > 0) {
-    const folderPath = result.filePaths[0];
-    console.log(folderPath);
-
-    // 폴더 경로를 파이썬 스크립트로 전달
-    const pythonScript = path.join(__dirname, './dicom_deidentifier.py');
-    const pythonProcess = spawn('python3', [pythonScript, folderPath]);
-
-    pythonProcess.stdout.on('data', (data) => {
-      console.log(`Python stdout: ${data}`);
-    });
-
-    pythonProcess.stderr.on('data', (data) => {
-      console.error(`Python stderr: ${data}`);
-    });
+    // eslint-disable-next-line prefer-destructuring
+    folderPath = result.filePaths[0];
   }
+
+  return folderPath;
 }
 
-ipcMain.on('ipc-dicom', () => {
-  selectFolder();
+ipcMain.on('ipc-dicom', async (event) => {
+  console.log('응답');
+  const result = await selectFolder();
+
+  event.reply('ipc-dicom-reply', result);
 });
 
-// ipc-dicom renderer 에서 dicom data 수신
-// ipcMain.on('ipc-dicom', async (event, arg) => {
-//   console.log(arg);
-// });
+ipcMain.on('ipc-form', async (event, arg) => {
+  console.log(arg);
+  runPython();
+
+  event.reply('ipc-form-reply', '제출을 완료했습니다');
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
