@@ -1,4 +1,4 @@
-export default interface defaultValues {
+export default interface FormValues {
   subj: string;
   dicom: FileList | null | undefined;
 }

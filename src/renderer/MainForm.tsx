@@ -8,23 +8,13 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
-// import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-// import * as S from './MainForm.styled';
-import defaultValues from './model';
+import { useState } from 'react';
+import FormValues from './model';
 
 function MainForm() {
   const [formValues, setFormValues] = useState<
-    defaultValues | Record<string, never>
+    FormValues | Record<string, never>
   >({});
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (inputRef.current !== null) {
-      inputRef.current.setAttribute('directory', 'true');
-      inputRef.current.setAttribute('webkitdirectory', 'true');
-    }
-  }, [inputRef]);
 
   const handleInputChange = (e: any) => {
     e.preventDefault();
@@ -35,30 +25,29 @@ function MainForm() {
     });
   };
 
-  // const handleFileUpload = (e: any) => {
-  //   console.log(inputRef);
-  //   setFormValues({
-  //     ...formValues,
-  //     [e.target.name]: inputRef?.current?.files,
-  //   });
-  // };
+  const [filePath, setFilePath] = useState<string>();
 
   function selectFolder() {
-    console.log('실행');
     window.electron.ipcRenderer.sendMessage('ipc-dicom');
+    // main ipc에서 응답 받기
+    window.electron.ipcRenderer.on('ipc-dicom-reply', (arg: any) => {
+      console.log('ipc-dicom-reply:', arg);
+      setFilePath(arg);
+    });
   }
 
   const clickBtn = (e: any) => {
     e.preventDefault();
     console.log(formValues);
+
     // main ipc로 form data 보내기
     window.electron.ipcRenderer.sendMessage(
-      'ipc-dicom',
+      'ipc-form',
       JSON.stringify(formValues)
     );
     // main ipc에서 응답 받기
-    window.electron.ipcRenderer.once('ipc-dicom', (arg) => {
-      console.log('ipc-dicom-renderer:', arg);
+    window.electron.ipcRenderer.on('ipc-form-reply', (arg: any) => {
+      console.log('ipc-form-reply:', arg);
     });
   };
 
@@ -94,23 +83,7 @@ function MainForm() {
         </Typography>
         <form onSubmit={clickBtn}>
           <Button onClick={() => selectFolder()}>Select Folder</Button>
-          {/* <Button
-            component="label"
-            variant="contained"
-            startIcon={<CloudUploadIcon />}
-            href="#file-up`load"
-            sx={{ marginBottom: '70px' }}
-          >
-            Upload dicom folder
-            <S.VisuallyHiddenInput
-              type="file"
-              ref={inputRef}
-              name="dicom"
-              // accept=".sh,application/x-executable"
-              onChange={handleFileUpload}
-            />
-          </Button> */}
-          <div>{formValues?.dicom?.length} files uploaded</div>
+          <div>{filePath}</div>
           <Grid container spacing={7}>
             <Grid item xs={12}>
               <TextField
