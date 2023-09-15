@@ -14,6 +14,7 @@ from tqdm import tqdm
 from loguru import logger
 import sys
 
+# get dicom path
 if len(sys.argv) != 2:
     print("not valid folder path")
     sys.exit(1)
