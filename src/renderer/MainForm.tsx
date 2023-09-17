@@ -9,7 +9,10 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import FolderZipIcon from '@mui/icons-material/FolderZip';
 import FormValues from './model';
+import * as S from './MainForm.styled';
 
 function MainForm() {
   const [formValues, setFormValues] = useState<
@@ -82,9 +85,17 @@ function MainForm() {
           Checkout
         </Typography>
         <form onSubmit={clickBtn}>
-          <Button onClick={() => selectFolder()}>Select Folder</Button>
-          <div>{filePath}</div>
-          <Grid container spacing={7}>
+          <Button
+            startIcon={<CloudUploadIcon />}
+            onClick={() => selectFolder()}
+          >
+            Select Folder
+          </Button>
+          <S.FileText>
+            {filePath && <FolderZipIcon />}
+            {filePath}
+          </S.FileText>
+          <Grid container>
             <Grid item xs={12}>
               <TextField
                 required

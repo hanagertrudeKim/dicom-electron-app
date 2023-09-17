@@ -1,15 +1,11 @@
+/* eslint-disable import/prefer-default-export */
 import styled from '@emotion/styled';
 
-export const VisuallyHiddenInput = styled('input')`
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  white-space: nowrap;
-  width: 1px;
+export const FileText = styled('div')`
+  margin: 15px 9px 46px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #aea8a8;
 `;
-
-export const Title = styled('div')``;
