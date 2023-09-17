@@ -9,3 +9,5 @@ export const FileText = styled('div')`
   gap: 9px;
   color: #aea8a8;
 `;
+
+export const CompleteText = styled('div')``;

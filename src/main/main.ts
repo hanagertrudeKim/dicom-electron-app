@@ -1,3 +1,4 @@
+/* eslint-disable prefer-promise-reject-errors */
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 /**
  * This module executes inside of electron's main process. You can start
@@ -28,16 +29,30 @@ let mainWindow: any;
 let folderPath: string;
 
 function runPython() {
-  // 폴더 경로를 파이썬 스크립트로 전달
-  const pythonScript = path.join(__dirname, './dicom_deidentifier.py');
-  const pythonProcess = spawn('python3', [pythonScript, folderPath]);
+  return new Promise<void>((resolve, reject) => {
+    // 폴더 경로를 파이썬 스크립트로 전달
+    const pythonScript = path.join(__dirname, './dicom_deidentifier.py');
+    const pythonProcess = spawn('python3', [pythonScript, folderPath]);
 
-  pythonProcess.stdout.on('data', (data) => {
-    console.log(`Python stdout: ${data}`);
-  });
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(`Python stdout: ${data}`);
+    });
 
-  pythonProcess.stderr.on('data', (data) => {
-    console.error(`Python stderr: ${data}`);
+    pythonProcess.stderr.on('data', (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    pythonProcess.on('exit', (code) => {
+      if (code === 0) {
+        console.log('Python 프로세스가 성공적으로 완료되었습니다.');
+        resolve(); // 성공적으로 완료된 경우 프로미스를 이행합니다.
+      } else {
+        console.error(
+          `Python 프로세스가 오류로 종료되었습니다. 종료 코드: ${code}`
+        );
+        reject(`Python 프로세스가 오류로 종료되었습니다. 종료 코드: ${code}`);
+      }
+    });
   });
 }
 
@@ -61,11 +76,14 @@ ipcMain.on('ipc-dicom', async (event) => {
   event.reply('ipc-dicom-reply', result);
 });
 
-ipcMain.on('ipc-form', async (event, arg) => {
-  console.log(arg);
-  runPython();
-
-  event.reply('ipc-form-reply', '제출을 완료했습니다');
+ipcMain.on('ipc-form', (event) => {
+  runPython()
+    .then(() => {
+      event.reply('ipc-form-reply', 'success dicom deidentification');
+    })
+    .catch(() => {
+      event.reply('ipc-form-reply', 'error dicom deidentification');
+    });
 });
 
 if (process.env.NODE_ENV === 'production') {

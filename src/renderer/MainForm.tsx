@@ -29,12 +29,12 @@ function MainForm() {
   };
 
   const [filePath, setFilePath] = useState<string>();
+  const [completeMessage, setCompleteMessage] = useState<string>();
 
   function selectFolder() {
     window.electron.ipcRenderer.sendMessage('ipc-dicom');
     // main ipc에서 응답 받기
     window.electron.ipcRenderer.on('ipc-dicom-reply', (arg: any) => {
-      console.log('ipc-dicom-reply:', arg);
       setFilePath(arg);
     });
   }
@@ -50,7 +50,7 @@ function MainForm() {
     );
     // main ipc에서 응답 받기
     window.electron.ipcRenderer.on('ipc-form-reply', (arg: any) => {
-      console.log('ipc-form-reply:', arg);
+      setCompleteMessage(arg);
     });
   };
 
@@ -84,6 +84,8 @@ function MainForm() {
         >
           Checkout
         </Typography>
+        <S.CompleteText>{completeMessage}</S.CompleteText>
+
         <form onSubmit={clickBtn}>
           <Button
             startIcon={<CloudUploadIcon />}
