@@ -13,6 +13,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import DoneIcon from '@mui/icons-material/Done';
 import FormValues from './model';
 import * as S from './MainForm.styled';
@@ -44,7 +45,6 @@ function MainForm() {
 
   const clickBtn = (e: any) => {
     e.preventDefault();
-    console.log(formValues);
     setStatus('loading');
 
     // main ipc로 form data 보내기
@@ -72,7 +72,7 @@ function MainForm() {
       >
         <Toolbar>
           <Typography variant="h6" color="inherit" noWrap>
-            DICOM Form
+            SNU-H
           </Typography>
         </Toolbar>
       </AppBar>
@@ -86,7 +86,7 @@ function MainForm() {
           align="center"
           sx={{ 'margin-bottom': '120px' }}
         >
-          Checkout
+          DICOM Form
         </Typography>
 
         <form onSubmit={clickBtn}>
@@ -113,9 +113,13 @@ function MainForm() {
               />
             </Grid>
             <S.CompleteText>
-              {status === 'success' && <DoneIcon />}
-              {status === 'success' &&
-                'Complete Dicom Deidentification (check your directory)'}
+              {(status === 'success' && <DoneIcon color="success" />) ||
+                (status === 'error' && (
+                  <WarningAmberOutlinedIcon color="error" />
+                ))}
+              {(status === 'success' &&
+                'Complete Dicom Deidentification (check your directory)') ||
+                (status === 'error' && 'Error Server')}
             </S.CompleteText>
             {status === 'loading' ? (
               <LoadingButton

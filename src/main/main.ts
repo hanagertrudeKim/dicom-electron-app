@@ -11,10 +11,11 @@
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
-import { spawn } from 'child_process';
+import log from 'electron-log'; // node-pty 를 추가
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+
+const pty = require('node-pty');
 
 class AppUpdater {
   constructor() {
@@ -32,27 +33,26 @@ function runPython() {
   return new Promise<void>((resolve, reject) => {
     // 폴더 경로를 파이썬 스크립트로 전달
     const pythonScript = path.join(__dirname, './dicom_deidentifier.py');
-    const pythonProcess = spawn('python3', [pythonScript, folderPath]);
+    const command = `python3 ${pythonScript} ${folderPath}`;
 
-    pythonProcess.stdout.on('data', (data) => {
-      console.log(`Python stdout: ${data}`);
+    const term = pty.spawn('bash', [], {
+      name: 'xterm-color',
+      cwd: process.cwd(),
+      env: process.env,
     });
 
-    pythonProcess.stderr.on('data', (data) => {
-      console.error(`Python stderr: ${data}`);
-    });
+    term.onData((data: any) => {
+      console.log(`PTY Data: ${data}`);
 
-    pythonProcess.on('exit', (code) => {
-      if (code === 0) {
-        console.log('Python 프로세스가 성공적으로 완료되었습니다.');
-        resolve(); // 성공적으로 완료된 경우 프로미스를 이행합니다.
-      } else {
-        console.error(
-          `Python 프로세스가 오류로 종료되었습니다. 종료 코드: ${code}`
-        );
-        reject(`Python 프로세스가 오류로 종료되었습니다. 종료 코드: ${code}`);
+      // 여기에서 Python 스크립트의 특정 출력을 감시하고 작업 성공 또는 실패 여부를 판단
+      if (data.includes('success')) {
+        resolve();
+      } else if (data.includes('error')) {
+        reject('error in deidentification script');
       }
     });
+
+    term.write(`${command}\r`);
   });
 }
 
@@ -70,7 +70,6 @@ async function selectFolder() {
 }
 
 ipcMain.on('ipc-dicom', async (event) => {
-  console.log('응답');
   const result = await selectFolder();
 
   event.reply('ipc-dicom-reply', result);

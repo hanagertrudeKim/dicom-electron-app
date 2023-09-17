@@ -14,15 +14,6 @@ from tqdm import tqdm
 from loguru import logger
 import sys
 
-# get dicom path
-if len(sys.argv) != 2:
-    print("not valid folder path")
-    sys.exit(1)
-
-folder_path = sys.argv[1]
-terminal_command = f"python3 ./dicom_deidentifier.py {folder_path}"
-os.system(terminal_command)
-
 # Setup Parser
 parser = argparse.ArgumentParser(description="De-Identifier")
 parser.add_argument("src", metavar="src", type=str,
@@ -308,3 +299,8 @@ if __name__ == "__main__":
         run_deidentifier_batch(src_path)
     else:
         run_deidentifier(src_path)
+        # 작업이 성공하면 종료 코드 'success'을 반환
+    sys.exit('success')
+
+# 작업이 실패하면 종료 코드 'error'을 반환
+sys.exit('error')
