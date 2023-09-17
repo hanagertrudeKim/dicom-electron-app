@@ -12,7 +12,7 @@ import { useState } from 'react';
 import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import FolderZipIcon from '@mui/icons-material/FolderZip';
+import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import DoneIcon from '@mui/icons-material/Done';
 import FormValues from './model';
 import * as S from './MainForm.styled';
@@ -97,7 +97,7 @@ function MainForm() {
             Select Folder
           </Button>
           <S.FileText>
-            {filePath && <FolderZipIcon />}
+            {filePath && <FolderOpenOutlinedIcon />}
             {filePath}
           </S.FileText>
           <Grid container>

@@ -6,19 +6,19 @@ export const FileText = styled('div')`
   font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 5px;
   color: #aea8a8;
 `;
 
 export const CompleteText = styled('div')`
   float: right;
-  margin: 15px 9px 46px;
+  margin: 5px 2px 46px;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 9px;
   color: #aea8a8;
   .css-i4bv87-MuiSvgIcon-root {
-    color: #1f451f;
+    color: #117611;
   }
 `;
