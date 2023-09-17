@@ -79,10 +79,10 @@ ipcMain.on('ipc-dicom', async (event) => {
 ipcMain.on('ipc-form', (event) => {
   runPython()
     .then(() => {
-      event.reply('ipc-form-reply', 'success dicom deidentification');
+      event.reply('ipc-form-reply', 'success');
     })
     .catch(() => {
-      event.reply('ipc-form-reply', 'error dicom deidentification');
+      event.reply('ipc-form-reply', 'error');
     });
 });
 

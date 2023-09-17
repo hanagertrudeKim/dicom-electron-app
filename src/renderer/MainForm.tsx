@@ -9,8 +9,11 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import LoadingButton from '@mui/lab/LoadingButton';
+import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FolderZipIcon from '@mui/icons-material/FolderZip';
+import DoneIcon from '@mui/icons-material/Done';
 import FormValues from './model';
 import * as S from './MainForm.styled';
 
@@ -29,7 +32,7 @@ function MainForm() {
   };
 
   const [filePath, setFilePath] = useState<string>();
-  const [completeMessage, setCompleteMessage] = useState<string>();
+  const [status, setStatus] = useState<string>();
 
   function selectFolder() {
     window.electron.ipcRenderer.sendMessage('ipc-dicom');
@@ -42,6 +45,7 @@ function MainForm() {
   const clickBtn = (e: any) => {
     e.preventDefault();
     console.log(formValues);
+    setStatus('loading');
 
     // main ipc로 form data 보내기
     window.electron.ipcRenderer.sendMessage(
@@ -50,7 +54,7 @@ function MainForm() {
     );
     // main ipc에서 응답 받기
     window.electron.ipcRenderer.on('ipc-form-reply', (arg: any) => {
-      setCompleteMessage(arg);
+      setStatus(arg);
     });
   };
 
@@ -84,7 +88,6 @@ function MainForm() {
         >
           Checkout
         </Typography>
-        <S.CompleteText>{completeMessage}</S.CompleteText>
 
         <form onSubmit={clickBtn}>
           <Button
@@ -109,19 +112,42 @@ function MainForm() {
                 onChange={handleInputChange}
               />
             </Grid>
-            <Button
-              variant="contained"
-              type="submit"
-              sx={{
-                mt: 3,
-                ml: 1,
-                display: 'absolute',
-                marginLeft: 'auto',
-                marginTop: '60px',
-              }}
-            >
-              submit
-            </Button>
+            <S.CompleteText>
+              {status === 'success' && <DoneIcon />}
+              {status === 'success' &&
+                'Complete Dicom Deidentification (check your directory)'}
+            </S.CompleteText>
+            {status === 'loading' ? (
+              <LoadingButton
+                loading
+                loadingPosition="start"
+                startIcon={<SaveIcon />}
+                variant="outlined"
+                sx={{
+                  mt: 3,
+                  ml: 1,
+                  display: 'absolute',
+                  marginLeft: 'auto',
+                  marginTop: '60px',
+                }}
+              >
+                Save
+              </LoadingButton>
+            ) : (
+              <Button
+                variant="contained"
+                type="submit"
+                sx={{
+                  mt: 3,
+                  ml: 1,
+                  display: 'absolute',
+                  marginLeft: 'auto',
+                  marginTop: '60px',
+                }}
+              >
+                submit
+              </Button>
+            )}
           </Grid>
         </form>
       </Container>

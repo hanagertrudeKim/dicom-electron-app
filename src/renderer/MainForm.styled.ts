@@ -2,7 +2,7 @@
 import styled from '@emotion/styled';
 
 export const FileText = styled('div')`
-  margin: 15px 9px 46px;
+  margin: 0px 9px 46px;
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -10,4 +10,15 @@ export const FileText = styled('div')`
   color: #aea8a8;
 `;
 
-export const CompleteText = styled('div')``;
+export const CompleteText = styled('div')`
+  float: right;
+  margin: 15px 9px 46px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #aea8a8;
+  .css-i4bv87-MuiSvgIcon-root {
+    color: #1f451f;
+  }
+`;
