@@ -45,6 +45,7 @@ function MainForm() {
 
   const clickBtn = (e: any) => {
     e.preventDefault();
+
     setStatus('loading');
 
     // main ipc로 form data 보내기
@@ -119,7 +120,7 @@ function MainForm() {
                 ))}
               {(status === 'success' &&
                 'Complete Dicom Deidentification (check your directory)') ||
-                (status === 'error' && 'Error Server')}
+                (status === 'error' && 'Error')}
             </S.CompleteText>
             {status === 'loading' ? (
               <LoadingButton
@@ -135,7 +136,7 @@ function MainForm() {
                   marginTop: '60px',
                 }}
               >
-                Save
+                deidentification
               </LoadingButton>
             ) : (
               <Button

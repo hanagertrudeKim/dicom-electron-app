@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
+    "url": "https://github.com/hanagertrudekim/dicom-electron-app"
   },
   "license": "MIT",
   "author": {
@@ -103,6 +103,7 @@
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "^5.3.0",
+    "node-abi": "^3.47.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.2"
@@ -175,14 +176,14 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "ElectronReact",
+    "productName": "DicomElectron",
     "appId": "org.erb.ElectronReact",
-    "asar": true,
-    "asarUnpack": "**\\*.{node,dll}",
+    "asar": false,
     "files": [
       "dist",
       "node_modules",
-      "package.json"
+      "package.json",
+      "dist/main/dicom_deidentifier.py"
     ],
     "afterSign": ".erb/scripts/notarize.js",
     "mac": {

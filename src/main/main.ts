@@ -32,7 +32,7 @@ let folderPath: string;
 function runPython() {
   return new Promise<void>((resolve, reject) => {
     // 폴더 경로를 파이썬 스크립트로 전달
-    const pythonScript = path.join(__dirname, './dicom_deidentifier.py');
+    const pythonScript = path.join(__dirname, 'dicom_deidentifier.py');
     const command = `python3 ${pythonScript} ${folderPath}`;
 
     const term = pty.spawn('bash', [], {
@@ -41,18 +41,17 @@ function runPython() {
       env: process.env,
     });
 
+    term.write(`${command}\r`);
+
     term.onData((data: any) => {
       console.log(`PTY Data: ${data}`);
-
-      // 여기에서 Python 스크립트의 특정 출력을 감시하고 작업 성공 또는 실패 여부를 판단
+      //  Python 스크립트의 특정 출력을 감시하고 작업 성공 또는 실패 여부를 판단
       if (data.includes('success')) {
         resolve();
       } else if (data.includes('error')) {
         reject('error in deidentification script');
       }
     });
-
-    term.write(`${command}\r`);
   });
 }
 
@@ -129,6 +128,7 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
+      nodeIntegration: true,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
