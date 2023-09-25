@@ -32,7 +32,6 @@ if src_path.endswith("/"):
 dst_path = args.dst
 csv_path = args.file
 
-
 # Tags
 TAGS_TO_ANONYMIZE = [
     # "PatientBirthDate",
@@ -269,6 +268,8 @@ def deidentify(dcm_path: Path, deid_dcm_dir: Path, subj: str):
     except:
         print(f"No series description - {dcm_path}")
         parsed_series_description = "UNKNOWN"
+        sys.exit('error')
+
     deid_series_dir = ("_").join(["DCM", subj, parsed_series_description])
     deid_series_dir_path = os.path.join(deid_dcm_dir, deid_series_dir)
 
@@ -291,6 +292,7 @@ def deidentify(dcm_path: Path, deid_dcm_dir: Path, subj: str):
 
     deid_dcm_path = os.path.join(deid_series_dir_path, basename(dcm_path))
     dcm.save_as(deid_dcm_path)
+    sys.exit('success')
 
 
 # 단일로 dicom 파일을 처리할지, 다중으로 dicom 파일을 일괄 처리할지 결정하는 조건문
@@ -300,7 +302,7 @@ if __name__ == "__main__":
     else:
         run_deidentifier(src_path)
         # 작업이 성공하면 종료 코드 'success'을 반환
-    sys.exit('success')
+        sys.exit('success')
 
-# 작업이 실패하면 종료 코드 'error'을 반환
-sys.exit('error')
+    # 작업이 실패하면 종료 코드 'error'을 반환
+    sys.exit('error')
