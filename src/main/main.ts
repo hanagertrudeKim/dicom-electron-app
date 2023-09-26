@@ -8,14 +8,13 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
-import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log'; // node-pty 를 추가
+import path from 'path';
+import axios from 'axios';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-
-const pty = require('node-pty');
 
 class AppUpdater {
   constructor() {
@@ -27,33 +26,7 @@ class AppUpdater {
 
 let mainWindow: any;
 
-let folderPath: string;
-
-function runPython() {
-  return new Promise<void>((resolve, reject) => {
-    // 폴더 경로를 파이썬 스크립트로 전달
-    const pythonScript = path.join(__dirname, 'dicom_deidentifier.py');
-    const command = `python3 ${pythonScript} ${folderPath}`;
-
-    const term = pty.spawn('bash', [], {
-      name: 'xterm-color',
-      cwd: process.cwd(),
-      env: process.env,
-    });
-
-    term.write(`${command}\r`);
-
-    term.onData((data: any) => {
-      console.log(`PTY Data: ${data}`);
-      //  Python 스크립트의 특정 출력을 감시하고 작업 성공 또는 실패 여부를 판단
-      if (data.includes('success')) {
-        resolve();
-      } else if (data.includes('error')) {
-        reject('error in deidentification script');
-      }
-    });
-  });
-}
+let folderPath: string = '';
 
 async function selectFolder() {
   const result = await dialog.showOpenDialog(mainWindow, {
@@ -74,8 +47,28 @@ ipcMain.on('ipc-dicom', async (event) => {
   event.reply('ipc-dicom-reply', result);
 });
 
+function runPython(dicomPath: string) {
+  return axios
+    .post(
+      'http://127.0.0.1:9999/deidentify',
+      { path: dicomPath },
+      { proxy: false }
+    )
+    .then((response) => {
+      console.log('서버 응답:');
+      console.log(`STATUS: ${response.status}`);
+      console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
+      console.log(`BODY: ${JSON.stringify(response.data)}`);
+    })
+    .catch((error) => {
+      console.error('오류 발생:');
+      console.error(`ERROR: ${error.message}`);
+      throw error;
+    });
+}
+
 ipcMain.on('ipc-form', (event) => {
-  runPython()
+  runPython(folderPath)
     .then(() => {
       event.reply('ipc-form-reply', 'success');
     })
@@ -128,7 +121,6 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      nodeIntegration: true,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
