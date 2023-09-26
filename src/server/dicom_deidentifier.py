@@ -268,7 +268,6 @@ def deidentify(dcm_path: Path, deid_dcm_dir: Path, subj: str):
     except:
         print(f"No series description - {dcm_path}")
         parsed_series_description = "UNKNOWN"
-        sys.exit('error')
 
     deid_series_dir = ("_").join(["DCM", subj, parsed_series_description])
     deid_series_dir_path = os.path.join(deid_dcm_dir, deid_series_dir)
@@ -292,17 +291,17 @@ def deidentify(dcm_path: Path, deid_dcm_dir: Path, subj: str):
 
     deid_dcm_path = os.path.join(deid_series_dir_path, basename(dcm_path))
     dcm.save_as(deid_dcm_path)
-    sys.exit('success')
 
 
 # 단일로 dicom 파일을 처리할지, 다중으로 dicom 파일을 일괄 처리할지 결정하는 조건문
 if __name__ == "__main__":
     if run_batch_or_not(src_path):
         run_deidentifier_batch(src_path)
+        sys.exit('success')
     else:
         run_deidentifier(src_path)
         # 작업이 성공하면 종료 코드 'success'을 반환
         sys.exit('success')
 
     # 작업이 실패하면 종료 코드 'error'을 반환
-    sys.exit('error')
+    sys.exit('여기서 에러')
