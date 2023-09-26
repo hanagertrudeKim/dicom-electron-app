@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/', methods=["GET"])
 def hello():
-    return "Server active!"
+    return "<h1> here! <h1>"
 
 
 @app.route('/deidentify', methods=['POST'])
@@ -27,4 +27,4 @@ def deidentify_dcm_folders():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9999, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
