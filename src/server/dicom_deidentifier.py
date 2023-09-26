@@ -29,8 +29,11 @@ args = parser.parse_args()
 src_path = args.src
 if src_path.endswith("/"):
     src_path = src_path[:-1]
-dst_path = args.dst
-csv_path = args.file
+dst_path = None
+csv_path = None
+
+print(src_path, dst_path, csv_path)
+
 
 # Tags
 TAGS_TO_ANONYMIZE = [
@@ -293,7 +296,21 @@ def deidentify(dcm_path: Path, deid_dcm_dir: Path, subj: str):
     dcm.save_as(deid_dcm_path)
 
 
-# 단일로 dicom 파일을 처리할지, 다중으로 dicom 파일을 일괄 처리할지 결정하는 조건문
+# main 함수로 실행
+def main(src_path):
+    if run_batch_or_not(src_path):
+        run_deidentifier_batch(src_path)
+        return "success"
+    else:
+        run_deidentifier(src_path)
+        # 작업이 성공하면 종료 코드 'success'을 반환
+        return "success"
+
+    # 작업이 실패하면 종료 코드 'error'을 반환
+    return "error"
+
+
+# 스크립트 직접 실행
 if __name__ == "__main__":
     if run_batch_or_not(src_path):
         run_deidentifier_batch(src_path)
@@ -304,4 +321,4 @@ if __name__ == "__main__":
         sys.exit('success')
 
     # 작업이 실패하면 종료 코드 'error'을 반환
-    sys.exit('여기서 에러')
+    sys.exit('error')
