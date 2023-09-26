@@ -21,6 +21,10 @@ node_modules
 release/app/dist
 release/build
 .erb/dll
+dist
+build
+*.spec
+*.pyc
 
 .idea
 npm-debug.log.*
