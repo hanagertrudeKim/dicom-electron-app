@@ -50,7 +50,7 @@ ipcMain.on('ipc-dicom', async (event) => {
 function runPython(dicomPath: string) {
   return axios
     .post(
-      'http://127.0.0.1:9999/deidentify',
+      'http://127.0.0.1:5000/deidentify',
       { path: dicomPath },
       { proxy: false }
     )
