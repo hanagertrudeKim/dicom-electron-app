@@ -127,6 +127,24 @@ const createWindow = async () => {
     },
   });
 
+  // Flask 서버 시작
+  const SERVER_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'dist/api')
+    : path.join(__dirname, '../../dist/api');
+
+  const { execFile } = require('child_process');
+
+  const flaskProcess = execFile(SERVER_PATH, ['src']);
+
+  // Flask 서버 출력을 로깅
+  flaskProcess.stdout.on('data', (data: any) => {
+    console.log(`flask stdout: ${data}`);
+  });
+
+  flaskProcess.stderr.on('data', (data: any) => {
+    console.error(`flask stderr: ${data}`);
+  });
+
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
   mainWindow.on('ready-to-show', () => {
@@ -142,6 +160,10 @@ const createWindow = async () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    // Electron 애플리케이션 종료 시 Flask 서버도 종료
+    if (flaskProcess) {
+      flaskProcess.kill();
+    }
   });
 
   const menuBuilder = new MenuBuilder(mainWindow);
