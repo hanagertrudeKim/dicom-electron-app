@@ -136,7 +136,7 @@ function MainForm() {
                   marginTop: '60px',
                 }}
               >
-                deidentification
+                progress
               </LoadingButton>
             ) : (
               <Button
