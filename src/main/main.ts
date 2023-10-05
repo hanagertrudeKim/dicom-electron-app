@@ -103,8 +103,8 @@ const installExtensions = async () => {
 
 // Flask 서버 path
 const SERVER_PATH = app.isPackaged
-  ? path.join(process.resourcesPath, 'dist/api')
-  : path.join(__dirname, '../../dist/api');
+  ? path.join(process.resourcesPath, 'backend/api')
+  : path.join(__dirname, '../../backend/api');
 
 let pythonProcess: any; // Python 프로세스를 저장하는 변수
 
