@@ -13,6 +13,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log'; // node-pty 를 추가
 import path from 'path';
 import axios from 'axios';
+import { execFile } from 'child_process';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -47,24 +48,22 @@ ipcMain.on('ipc-dicom', async (event) => {
   event.reply('ipc-dicom-reply', result);
 });
 
-function runPython(dicomPath: string) {
-  return axios
-    .post(
+async function runPython(dicomPath: string) {
+  try {
+    const response = await axios.post(
       'http://127.0.0.1:5000/deidentify',
       { path: dicomPath },
       { proxy: false }
-    )
-    .then((response) => {
-      console.log('서버 응답:');
-      console.log(`STATUS: ${response.status}`);
-      console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
-      console.log(`BODY: ${JSON.stringify(response.data)}`);
-    })
-    .catch((error) => {
-      console.error('오류 발생:');
-      console.error(`ERROR: ${error.message}`);
-      throw error;
-    });
+    );
+    console.log('서버 응답:');
+    console.log(`STATUS: ${response.status}`);
+    console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
+    console.log(`BODY: ${JSON.stringify(response.data)}`);
+  } catch (error: any) {
+    console.error('오류 발생:');
+    console.error(`ERROR: ${error.message}`);
+    throw error;
+  }
 }
 
 ipcMain.on('ipc-form', (event) => {
@@ -102,6 +101,27 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
+// Flask 서버 path
+const SERVER_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'dist/api')
+  : path.join(__dirname, '../../dist/api');
+
+let pythonProcess: any; // Python 프로세스를 저장하는 변수
+
+function startFlaskServer() {
+  if (!pythonProcess) {
+    pythonProcess = execFile(path.resolve(SERVER_PATH), ['src']);
+    // Flask 서버 출력을 로깅
+    pythonProcess.stdout.on('data', (data: any) => {
+      console.log(`flask stdout: ${data}`);
+    });
+
+    pythonProcess.stderr.on('data', (data: any) => {
+      console.error(`flask stderr: ${data}`);
+    });
+  }
+}
+
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
@@ -138,27 +158,12 @@ const createWindow = async () => {
       mainWindow.show();
     }
 
-    // Flask 서버 시작
-    const SERVER_PATH = app.isPackaged
-      ? path.join(process.resourcesPath, 'dist/api')
-      : path.join(__dirname, '../../dist/api');
+    startFlaskServer();
 
-    const { execFile } = require('child_process');
-
-    const flaskProcess = execFile(SERVER_PATH, ['src']);
-
-    // Flask 서버 출력을 로깅
-    flaskProcess.stdout.on('data', (data: any) => {
-      console.log(`flask stdout: ${data}`);
-    });
-
-    flaskProcess.stderr.on('data', (data: any) => {
-      console.error(`flask stderr: ${data}`);
-    });
-
-    mainWindow.on('closed', () => {
-      if (flaskProcess) {
-        flaskProcess.kill();
+    mainWindow?.on('closed', () => {
+      if (pythonProcess) {
+        pythonProcess.kill();
+        pythonProcess = null;
       }
       mainWindow = null;
     });
