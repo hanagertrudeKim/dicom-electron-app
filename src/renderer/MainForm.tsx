@@ -4,7 +4,6 @@ import {
   Container,
   CssBaseline,
   Grid,
-  TextField,
   Toolbar,
   Typography,
 } from '@mui/material';
@@ -15,28 +14,15 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import DoneIcon from '@mui/icons-material/Done';
-import FormValues from './model';
 import * as S from './MainForm.styled';
 
 function MainForm() {
-  const [formValues, setFormValues] = useState<
-    FormValues | Record<string, never>
-  >({});
-
-  const handleInputChange = (e: any) => {
-    e.preventDefault();
-    const { name, value } = e.target;
-    setFormValues({
-      ...formValues,
-      [name]: value,
-    });
-  };
-
   const [filePath, setFilePath] = useState<string>();
   const [status, setStatus] = useState<string>();
 
   function selectFolder() {
     window.electron.ipcRenderer.sendMessage('ipc-dicom');
+
     // main ipc에서 응답 받기
     window.electron.ipcRenderer.on('ipc-dicom-reply', (arg: any) => {
       setFilePath(arg);
@@ -48,11 +34,9 @@ function MainForm() {
 
     setStatus('loading');
 
-    // main ipc로 form data 보내기
-    window.electron.ipcRenderer.sendMessage(
-      'ipc-form',
-      JSON.stringify(formValues)
-    );
+    // main ipc 실행
+    window.electron.ipcRenderer.sendMessage('ipc-form');
+
     // main ipc에서 응답 받기
     window.electron.ipcRenderer.on('ipc-form-reply', (arg: any) => {
       setStatus(arg);
@@ -102,17 +86,6 @@ function MainForm() {
             {filePath}
           </S.FileText>
           <Grid container>
-            <Grid item xs={12}>
-              <TextField
-                required
-                id="subj"
-                name="subj"
-                label="Subject"
-                fullWidth
-                variant="standard"
-                onChange={handleInputChange}
-              />
-            </Grid>
             <S.CompleteText>
               {(status === 'success' && <DoneIcon color="success" />) ||
                 (status === 'error' && (
