@@ -13,6 +13,7 @@ from pydicom import dcmread
 from tqdm import tqdm
 from loguru import logger
 import sys
+import uuid
 
 # Setup Parser
 parser = argparse.ArgumentParser(description="De-Identifier")
@@ -31,8 +32,6 @@ if src_path.endswith("/"):
     src_path = src_path[:-1]
 dst_path = None
 csv_path = None
-
-print(src_path, dst_path, csv_path)
 
 
 # Tags
@@ -167,7 +166,7 @@ def get_file_count(src_dcm_dir) -> int:
         return file_count
 
 
-# dicom_path, subj를 입력받아 DICOM파일들을 분석하여 시리즈 메타데이터와 파일 경로를 추출하고, 딕셔너리로 반환
+# dicom_path, subj를 입력받아 DICOM파일들을 분석 => 시리즈 메타데이터와 파일 경로를 추출하고, 딕셔너리로 반환
 def analyze_dcm_series(dcm_paths, subj):
     series_metadata_dict = {}
     series_path_dict = {}
@@ -189,6 +188,7 @@ def analyze_dcm_series(dcm_paths, subj):
             series_metadata_dict[series_uid]["subj"] = subj
             series_path_dict[series_uid] = [dcm_path]
         else:
+            series_metadata_dict[series_uid]["subj"] = subj
             series_path_dict[series_uid].append(dcm_path)
             try:
                 series_metadata_dict[series_uid]["ct_date"] = dcm.AcquisitionDate
@@ -232,8 +232,7 @@ def parse_series_description(series_description: str) -> str:
 def run_deidentifier(src_path: Path):
     mrn_id_mapping = get_subj_from_csv(csv_path) if csv_path else {}
 
-    subj = basename(src_path).split("_")[0]
-    subj = mrn_id_mapping[subj] if mrn_id_mapping else subj
+    subj = str(uuid.uuid4())
 
     if dst_path:
         deid_dcm_dir = Path(dst_path)
