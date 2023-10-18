@@ -12,8 +12,8 @@ import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log'; // node-pty 를 추가
 import path from 'path';
-import axios from 'axios';
 import { execFile } from 'child_process';
+import { PythonShell } from 'python-shell';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -48,22 +48,36 @@ ipcMain.on('ipc-dicom', async (event) => {
   event.reply('ipc-dicom-reply', result);
 });
 
+const DICOM_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'backend/dicom_deidentifier.py')
+  : path.join(__dirname, '../../backend/dicom_deidentifier.py');
+
 async function runPython(dicomPath: string) {
-  try {
-    const response = await axios.post(
-      'http://127.0.0.1:5000/deidentify',
-      { path: dicomPath },
-      { proxy: false }
-    );
-    console.log('서버 응답:');
-    console.log(`STATUS: ${response.status}`);
-    console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
-    console.log(`BODY: ${JSON.stringify(response.data)}`);
-  } catch (error: any) {
-    console.error('오류 발생:');
-    console.error(`ERROR: ${error.message}`);
-    throw error;
-  }
+  const options = {
+    args: [dicomPath],
+  };
+  PythonShell.run(DICOM_PATH, options)
+    .then((data: any) => {
+      console.log(data);
+    })
+    .catch((err: any) => {
+      console.log(err);
+    });
+  // try {
+  //   const response = await axios.post(
+  //     'http://127.0.0.1:5000/deidentify',
+  //     { path: dicomPath },
+  //     { proxy: false }
+  //   );
+  //   console.log('서버 응답:');
+  //   console.log(`STATUS: ${response.status}`);
+  //   console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
+  //   console.log(`BODY: ${JSON.stringify(response.data)}`);
+  // } catch (error: any) {
+  //   console.error('오류 발생:');
+  //   console.error(`ERROR: ${error.message}`);
+  //   throw error;
+  // }
 }
 
 ipcMain.on('ipc-form', (event) => {
