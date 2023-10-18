@@ -123,15 +123,15 @@ def get_dcm_paths_from_dcm_dir(src_dcm_dir: str) -> List[Path]:
 # 입력값인 src_dcm_dir와 subj를 사용하여 De-identification 작업을 위한 디렉터리 구조를 생성하고, 생성된 디렉터리의 경로를 반환
 def prepare_deid_dcm_dir(src_dcm_dir, subj) -> str:
 
-    dcm_dir_root = src_dcm_dir
-    print("src_dcm_dir: ", src_dcm_dir)
-    print("dcm_dir_root: ", dcm_dir_root)
+    dcm_dir_root = dirname(src_dcm_dir)
+    # print("src_dcm_dir: ", src_dcm_dir)
+    # print("dcm_dir_root: ", dcm_dir_root)
 
     dcm_dir_array = dirname(dcm_dir_root).split(os.path.sep)
     home_dir = os.path.expanduser("~")
     new_dcm_dir_root = os.path.sep.join(dcm_dir_array)
     new_dcm_dir_root = os.path.join(home_dir, new_dcm_dir_root)
-    print("new_dcm_dir_root : ", new_dcm_dir_root)
+    # print("new_dcm_dir_root : ", new_dcm_dir_root)
 
     deid_dcm_dir_material = basename(dcm_dir_root).split("_")
     deid_dcm_dir_material.insert(1, "deid")
@@ -139,25 +139,19 @@ def prepare_deid_dcm_dir(src_dcm_dir, subj) -> str:
 
     deid_dcm_dir_path = os.path.abspath(
         os.path.join(new_dcm_dir_root, deid_dcm_dir))
-    print("deid_dcm_dir_path: ", deid_dcm_dir_path)
+    # print("deid_dcm_dir_path: ", deid_dcm_dir_path)
 
     deid_dcm_child_dir = ("_").join(
         [subj, basename(src_dcm_dir).split("_")[1]])
     deid_dcm_dir_child_path = os.path.join(
         deid_dcm_dir_path, deid_dcm_child_dir)
-    print("deid_dcm_dir_child_path: ", deid_dcm_dir_child_path)
+   # print("deid_dcm_dir_child_path: ", deid_dcm_dir_child_path)
 
-    print("dirname(deid_dcm_dir_path) 유무 : ",
-          os.path.exists(dirname(deid_dcm_dir_path)))
     if not os.path.exists(deid_dcm_dir_path):
         os.makedirs(deid_dcm_dir_path, exist_ok=True)
-        os.chmod(deid_dcm_dir_path, 0o777)
-        # todo : 권한 제거 코드 추가
 
     if not os.path.exists(deid_dcm_dir_child_path):
         os.makedirs(deid_dcm_dir_child_path, exist_ok=True)
-        os.chmod(deid_dcm_dir_child_path, 0o777)
-        # os.system(f'chmod 777 {deid_dcm_dir_child_path}')
 
     return deid_dcm_dir_child_path
 
