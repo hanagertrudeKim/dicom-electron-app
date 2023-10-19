@@ -12,6 +12,7 @@ import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log'; // node-pty 를 추가
 import path from 'path';
+import fs from 'fs';
 import { execFile } from 'child_process';
 import { PythonShell } from 'python-shell';
 import MenuBuilder from './menu';
@@ -42,21 +43,22 @@ async function selectFolder() {
   return folderPath;
 }
 
-ipcMain.on('ipc-dicom', async (event) => {
-  const result = await selectFolder();
-
-  event.reply('ipc-dicom-reply', result);
-});
-
 const DICOM_PATH = app.isPackaged
   ? path.join(process.resourcesPath, 'backend/dicom_deidentifier.py')
   : path.join(__dirname, '../../backend/dicom_deidentifier.py');
+
+ipcMain.on('ipc-dicom', async (event) => {
+  const result = await selectFolder();
+  const directory = fs.existsSync(DICOM_PATH);
+
+  event.reply('ipc-dicom-reply', `directory check : ${directory} + ${result}`);
+});
 
 async function runPython(dicomPath: string) {
   const options = {
     args: [dicomPath],
   };
-  PythonShell.run(DICOM_PATH, options)
+  return PythonShell.run(DICOM_PATH, options)
     .then((data: any) => {
       console.log(data);
     })
