@@ -86,6 +86,7 @@ async function runPython(dicomPath: string) {
     })
     .catch((error) => {
       console.error(`폴더 업로드 오류: ${error}`);
+      throw error;
     });
 }
 
