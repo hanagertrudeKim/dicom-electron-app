@@ -3,9 +3,27 @@ from dicom_deidentifier import main
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def index():
     return render_template('./index.html')
+
+
+@app.route('/upload', methods=['POST'])
+def upload_folder():
+    if 'folder' not in request.files:
+        return jsonify({'error': 'No folder part'})
+
+    folder = request.files['folder']
+
+    if folder.filename == '':
+        return jsonify({'error': 'No selected folder'})
+
+    # 폴더 저장
+    folder.save('static/dicom')  # 저장할 폴더 경로
+
+    return jsonify({'message': 'Dicom Folder successfully uploaded'})
+
 
 @app.route('/deidentify', methods=['POST'])
 def deidentify_dcm_folder():

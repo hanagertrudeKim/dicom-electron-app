@@ -12,9 +12,10 @@ import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log'; // node-pty 를 추가
 import path from 'path';
-import fs from 'fs';
 import { execFile } from 'child_process';
-import { PythonShell } from 'python-shell';
+import axios from 'axios';
+import fs from 'fs';
+import FormData from 'form-data';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -55,40 +56,32 @@ ipcMain.on('ipc-dicom', async (event) => {
 });
 
 async function runPython(dicomPath: string) {
-  const options = {
-    args: [dicomPath],
-  };
-  return PythonShell.run(DICOM_PATH, options)
-    .then((data: any) => {
-      console.log(data);
+  // Flask 서버로 전송
+  const url =
+    'https://port-0-dicom-electron-app-euegqv2blnodu475.sel5.cloudtype.app';
+  const formData = new FormData();
+  formData.append('folder', fs.createReadStream(dicomPath));
+
+  axios
+    .post(url, formData, {
+      headers: formData.getHeaders(),
     })
-    .catch((err: any) => {
-      console.log(err);
+    .then((res) => {
+      console.log(`폴더 업로드 응답: ${res.data}`);
+    })
+    .catch((error) => {
+      console.error(`폴더 업로드 오류: ${error}`);
+      throw error;
     });
-  // try {
-  //   const response = await axios.post(
-  //     'http://127.0.0.1:5000/deidentify',
-  //     { path: dicomPath },
-  //     { proxy: false }
-  //   );
-  //   console.log('서버 응답:');
-  //   console.log(`STATUS: ${response.status}`);
-  //   console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
-  //   console.log(`BODY: ${JSON.stringify(response.data)}`);
-  // } catch (error: any) {
-  //   console.error('오류 발생:');
-  //   console.error(`ERROR: ${error.message}`);
-  //   throw error;
-  // }
 }
 
 ipcMain.on('ipc-form', (event) => {
   runPython(folderPath)
     .then(() => {
-      event.reply('ipc-form-reply', 'success');
+      event.reply('ipc-form-reply', `success`);
     })
-    .catch(() => {
-      event.reply('ipc-form-reply', 'error');
+    .catch((err: any) => {
+      event.reply('ipc-form-reply', `error: ${JSON.stringify(err)}`);
     });
 });
 

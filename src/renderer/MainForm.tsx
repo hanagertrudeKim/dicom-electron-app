@@ -12,8 +12,8 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import DoneIcon from '@mui/icons-material/Done';
+// import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+// import DoneIcon from '@mui/icons-material/Done';
 import * as S from './MainForm.styled';
 
 function MainForm() {
@@ -87,13 +87,14 @@ function MainForm() {
           </S.FileText>
           <Grid container>
             <S.CompleteText>
-              {(status === 'success' && <DoneIcon color="success" />) ||
+              {/* {(status === 'success' && <DoneIcon color="success" />) ||
                 (status === 'error' && (
                   <WarningAmberOutlinedIcon color="error" />
                 ))}
               {(status === 'success' &&
                 'Complete Dicom Deidentification (check your directory)') ||
-                (status === 'error' && 'Error')}
+                (status === 'error' && 'Error')} */}
+              {status}
             </S.CompleteText>
             {status === 'loading' ? (
               <LoadingButton
