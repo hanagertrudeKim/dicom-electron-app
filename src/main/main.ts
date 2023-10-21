@@ -16,6 +16,7 @@ import { execFile } from 'child_process';
 import axios from 'axios';
 import fs from 'fs';
 import FormData from 'form-data';
+import archiver from 'archiver';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -44,23 +45,37 @@ async function selectFolder() {
   return folderPath;
 }
 
-const DICOM_PATH = app.isPackaged
-  ? path.join(process.resourcesPath, 'backend/dicom_deidentifier.py')
-  : path.join(__dirname, '../../backend/dicom_deidentifier.py');
-
 ipcMain.on('ipc-dicom', async (event) => {
   const result = await selectFolder();
-  const directory = fs.existsSync(DICOM_PATH);
 
-  event.reply('ipc-dicom-reply', `directory check : ${directory} + ${result}`);
+  event.reply('ipc-dicom-reply', result);
 });
 
 async function runPython(dicomPath: string) {
   // Flask 서버로 전송
+
+  const output = fs.createWriteStream('./output');
+  const archive = archiver('zip', { zlib: { level: 9 } });
+
+  archive.on('error', (err) => {
+    throw err;
+  });
+
+  archive.directory(dicomPath, false);
+  archive.pipe(output);
+  archive.finalize();
+
+  output.on('close', () => {
+    console.log(`${archive.pointer()} total bytes`);
+    console.log('압축 완료');
+  });
+
+  // Flask 서버로 전송
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream('./output'));
+
   const url =
     'https://port-0-dicom-electron-app-euegqv2blnodu475.sel5.cloudtype.app';
-  const formData = new FormData();
-  formData.append('folder', fs.createReadStream(dicomPath));
 
   axios
     .post(url, formData, {
@@ -71,7 +86,6 @@ async function runPython(dicomPath: string) {
     })
     .catch((error) => {
       console.error(`폴더 업로드 오류: ${error}`);
-      throw error;
     });
 }
 

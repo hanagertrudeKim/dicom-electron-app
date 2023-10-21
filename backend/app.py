@@ -11,18 +11,20 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_folder():
-    if 'folder' not in request.files:
-        return jsonify({'error': 'No folder part'})
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
 
-    folder = request.files['folder']
+    file = request.files['file']
 
-    if folder.filename == '':
-        return jsonify({'error': 'No selected folder'})
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
 
-    # 폴더 저장
-    folder.save('static/dicom')  # 저장할 폴더 경로
+    # 압축 파일을 저장하고 압축 해제
+    file.save('static/dicom')  # 압축 파일 저장 경로
+    with zipfile.ZipFile('path/to/save/directory/folder.zip', 'r') as zip_ref:
+        zip_ref.extractall('static/dicom')  # 압축 해제 경로
 
-    return jsonify({'message': 'Dicom Folder successfully uploaded'})
+    return jsonify({'message': 'Folder successfully uploaded and extracted'})
 
 
 @app.route('/deidentify', methods=['POST'])
