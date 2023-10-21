@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from dicom_deidentifier import main
+import zipfile
+import os
 
 app = Flask(__name__)
 
