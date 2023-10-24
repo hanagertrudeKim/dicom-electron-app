@@ -14,6 +14,7 @@ import log from 'electron-log'; // node-pty 를 추가
 import path from 'path';
 import { PythonShell } from 'python-shell';
 import os from 'os';
+import fs from 'fs';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -85,8 +86,13 @@ function getPythonPath(platform: any) {
 
 ipcMain.on('ipc-dicom', async (event) => {
   const result = await selectFolder();
-
-  event.reply('ipc-dicom-reply', result);
+  const pythonPath = getPythonPath(os.platform());
+  event.reply(
+    'ipc-dicom-reply',
+    `pythonPath : ${fs.existsSync(pythonPath)}, DICOMPath : ${fs.existsSync(
+      DICOM_PATH
+    )} ${result}`
+  );
 });
 
 ipcMain.on('ipc-form', (event) => {
@@ -95,17 +101,27 @@ ipcMain.on('ipc-form', (event) => {
   const options = {
     pythonPath,
     args: [folderPath],
+    mode: 'text' as const,
   };
 
-  PythonShell.run(DICOM_PATH, options)
-    .then((results: any) => {
-      console.log('results: ', results);
-      event.reply('ipc-form-reply', `success`);
-    })
-    .catch((err: any) => {
-      console.log('PythonShell error: ', err);
+  const pythonShell = new PythonShell(DICOM_PATH, options);
+
+  pythonShell.on('message', (message) => {
+    // Python 스크립트에서 print()를 호출할 때마다 여기가 실행됩니다.
+    console.log('Python Output:', message);
+    // Electron 렌더러 프로세스로 메시지 전송
+    event.reply('ipc-form-reply', message);
+  });
+
+  pythonShell.end((err, code, signal) => {
+    if (err) {
+      console.error('PythonShell Error:', err);
       event.reply('ipc-form-reply', JSON.stringify(err));
-    });
+    } else {
+      console.log('PythonShell Finished:', { code, signal });
+      event.reply('ipc-form-reply', 'success');
+    }
+  });
 });
 
 if (process.env.NODE_ENV === 'production') {

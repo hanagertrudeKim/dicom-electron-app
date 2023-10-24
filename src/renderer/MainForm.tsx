@@ -12,13 +12,13 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
-// import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-// import DoneIcon from '@mui/icons-material/Done';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import DoneIcon from '@mui/icons-material/Done';
 import * as S from './MainForm.styled';
 
 function MainForm() {
-  const [filePath, setFilePath] = useState<string>();
-  const [status, setStatus] = useState<string>();
+  const [filePath, setFilePath] = useState<string>('');
+  const [status, setStatus] = useState<string>('');
 
   function selectFolder() {
     window.electron.ipcRenderer.sendMessage('ipc-dicom');
@@ -87,14 +87,14 @@ function MainForm() {
           </S.FileText>
           <Grid container>
             <S.CompleteText>
-              {/* {(status === 'success' && <DoneIcon color="success" />) ||
+              {status}
+              {(status === 'success' && <DoneIcon color="success" />) ||
                 (status === 'error' && (
                   <WarningAmberOutlinedIcon color="error" />
                 ))}
               {(status === 'success' &&
                 'Complete Dicom Deidentification (check your directory)') ||
-                (status === 'error' && 'Error')} */}
-              {status}
+                (status === 'error' && 'Error')}
             </S.CompleteText>
             {status === 'loading' ? (
               <LoadingButton

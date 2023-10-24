@@ -129,14 +129,11 @@ def get_dcm_paths_from_dcm_dir(src_dcm_dir: str) -> List[Path]:
 def prepare_deid_dcm_dir(src_dcm_dir, subj) -> str:
 
     dcm_dir_root = dirname(src_dcm_dir)
-    print("src_dcm_dir: ", src_dcm_dir)
-    print("dcm_dir_root: ", dcm_dir_root)
-
+    
     dcm_dir_array = dirname(dcm_dir_root).split(os.path.sep)
     home_dir = os.path.expanduser("~")
     new_dcm_dir_root = os.path.sep.join(dcm_dir_array)
-    new_dcm_dir_root = os.path.join(home_dir, new_dcm_dir_root)
-    print("new_dcm_dir_root : ", new_dcm_dir_root)
+    new_dcm_dir_root = os.path.join(home_dir, new_dcm_dir_root)    
 
     deid_dcm_dir_material = basename(dcm_dir_root).split("_")
     deid_dcm_dir_material.insert(1, "deid")
@@ -144,25 +141,17 @@ def prepare_deid_dcm_dir(src_dcm_dir, subj) -> str:
 
     deid_dcm_dir_path = os.path.abspath(
         os.path.join(new_dcm_dir_root, deid_dcm_dir))
-    print("deid_dcm_dir_path: ", deid_dcm_dir_path)
-
+    
     deid_dcm_child_dir = ("_").join(
         [subj, basename(src_dcm_dir).split("_")[1]])
     deid_dcm_dir_child_path = os.path.join(
         deid_dcm_dir_path, deid_dcm_child_dir)
-    print("deid_dcm_dir_child_path: ", deid_dcm_dir_child_path)
-
-    print("dirname(deid_dcm_dir_path) 유무 : ",
-          os.path.exists(dirname(deid_dcm_dir_path)))
+    
     if not os.path.exists(deid_dcm_dir_path):
         os.makedirs(deid_dcm_dir_path, exist_ok=True)
-        os.chmod(deid_dcm_dir_path, 0o777)
-        # todo : 권한 제거 코드 추가
 
     if not os.path.exists(deid_dcm_dir_child_path):
         os.makedirs(deid_dcm_dir_child_path, exist_ok=True)
-        os.chmod(deid_dcm_dir_child_path, 0o777)
-        # os.system(f'chmod 777 {deid_dcm_dir_child_path}')
 
     return deid_dcm_dir_child_path
 
@@ -244,7 +233,6 @@ def parse_series_description(series_description: str) -> str:
 
 # dicom파일 deidentifier을 수행하는 함수
 def run_deidentifier(src_path: Path):
-    print('src_path : ', src_path)
     mrn_id_mapping = get_subj_from_csv(csv_path) if csv_path else {}
 
     subj = str(uuid.uuid4())
