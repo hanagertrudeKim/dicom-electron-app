@@ -180,7 +180,6 @@
   "build": {
     "productName": "DicomElectron",
     "appId": "org.erb.ElectronReact",
-    "asar": false,
     "files": [
       "dist",
       "backend",
@@ -236,9 +235,6 @@
       "./assets/**",
       "./backend/**"
     ],
-    "nsis": {
-      "runAfterFinish": false
-    },
     "publish": {
       "provider": "github",
       "owner": "electron-react-boilerplate",
