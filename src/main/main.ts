@@ -12,11 +12,8 @@ import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log'; // node-pty 를 추가
 import path from 'path';
-import { execFile } from 'child_process';
-import axios from 'axios';
-import fs from 'fs';
-import FormData from 'form-data';
-import archiver from 'archiver';
+import { PythonShell } from 'python-shell';
+import os from 'os';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -45,58 +42,69 @@ async function selectFolder() {
   return folderPath;
 }
 
+const DICOM_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'backend/dicom_deidentifier.py')
+  : path.join(__dirname, '../../backend/dicom_deidentifier.py');
+
+function getPythonPath(platform: any) {
+  let pythonDir = '';
+  let pythonExecutable = '';
+
+  switch (platform) {
+    case 'win32':
+      pythonDir = 'windows';
+      pythonExecutable = 'pythonw.exe';
+      break;
+    case 'darwin':
+      pythonDir = 'mac';
+      pythonExecutable = 'python3.12';
+      break;
+    case 'linux':
+      pythonDir = 'linux';
+      pythonExecutable = 'python';
+      break;
+    default:
+      throw new Error('Unsupported OS');
+  }
+
+  if (app.isPackaged) {
+    return path.join(
+      process.resourcesPath,
+      'backend/python',
+      pythonDir,
+      pythonExecutable
+    );
+  }
+  return path.join(
+    __dirname,
+    '../../backend/python',
+    pythonDir,
+    pythonExecutable
+  );
+}
+
 ipcMain.on('ipc-dicom', async (event) => {
   const result = await selectFolder();
 
   event.reply('ipc-dicom-reply', result);
 });
 
-async function runPython(dicomPath: string) {
-  // Flask 서버로 전송
-
-  const output = fs.createWriteStream('./output');
-  const archive = archiver('zip', { zlib: { level: 9 } });
-
-  archive.on('error', (err) => {
-    throw err;
-  });
-
-  archive.directory(dicomPath, false);
-  archive.pipe(output);
-  archive.finalize();
-
-  output.on('close', () => {
-    console.log(`${archive.pointer()} total bytes`);
-    console.log('압축 완료');
-  });
-
-  // Flask 서버로 전송
-  const formData = new FormData();
-  formData.append('file', fs.createReadStream('./output'));
-
-  const url =
-    'https://port-0-dicom-electron-app-euegqv2blnodu475.sel5.cloudtype.app';
-
-  axios
-    .post(url, formData, {
-      headers: formData.getHeaders(),
-    })
-    .then((res) => {
-      console.log(`폴더 업로드 응답: ${res.data}`);
-    })
-    .catch((error) => {
-      console.error(`폴더 업로드 오류: ${error}`);
-      throw error;
-    });
-}
-
 ipcMain.on('ipc-form', (event) => {
-  runPython(folderPath)
-    .then(() => {
+  const pythonPath = getPythonPath(os.platform());
+
+  const options = {
+    pythonPath,
+    args: [folderPath],
+  };
+
+  PythonShell.run(DICOM_PATH, options)
+    .then((results: any) => {
+      console.log('results: ', results);
       event.reply('ipc-form-reply', `success`);
     })
     .catch((err: any) => {
-      event.reply('ipc-form-reply', `error: ${JSON.stringify(err)}`);
+      console.log('PythonShell error: ', err);
+      event.reply('ipc-form-reply', JSON.stringify(err));
     });
 });
 
@@ -124,27 +132,6 @@ const installExtensions = async () => {
     )
     .catch(console.log);
 };
-
-// Flask 서버 path
-const SERVER_PATH = app.isPackaged
-  ? path.join(process.resourcesPath, 'backend/api')
-  : path.join(__dirname, '../../backend/api');
-
-let pythonProcess: any; // Python 프로세스를 저장하는 변수
-
-function startFlaskServer() {
-  if (!pythonProcess) {
-    pythonProcess = execFile(path.resolve(SERVER_PATH), ['src']);
-    // Flask 서버 출력을 로깅
-    pythonProcess.stdout.on('data', (data: any) => {
-      console.log(`flask stdout: ${data}`);
-    });
-
-    pythonProcess.stderr.on('data', (data: any) => {
-      console.error(`flask stderr: ${data}`);
-    });
-  }
-}
 
 const createWindow = async () => {
   if (isDebug) {
@@ -182,13 +169,7 @@ const createWindow = async () => {
       mainWindow.show();
     }
 
-    startFlaskServer();
-
     mainWindow?.on('closed', () => {
-      if (pythonProcess) {
-        pythonProcess.kill();
-        pythonProcess = null;
-      }
       mainWindow = null;
     });
   });
