@@ -19,6 +19,7 @@ import * as S from './MainForm.styled';
 function MainForm() {
   const [filePath, setFilePath] = useState<string>('');
   const [status, setStatus] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
 
   function selectFolder() {
     window.electron.ipcRenderer.sendMessage('ipc-dicom');
@@ -39,7 +40,12 @@ function MainForm() {
 
     // main ipc에서 응답 받기
     window.electron.ipcRenderer.on('ipc-form-reply', (arg: any) => {
-      setStatus(arg);
+      setMessage(arg.message);
+      if (arg.code === 0) {
+        setStatus('success');
+      } else if (arg.code === 1) {
+        setStatus('error');
+      }
     });
   };
 
@@ -87,14 +93,9 @@ function MainForm() {
           </S.FileText>
           <Grid container>
             <S.CompleteText>
-              {status}
-              {(status === 'success' && <DoneIcon color="success" />) ||
-                (status === 'error' && (
-                  <WarningAmberOutlinedIcon color="error" />
-                ))}
-              {(status === 'success' &&
-                'Complete Dicom Deidentification (check your directory)') ||
-                (status === 'error' && 'Error')}
+              {status === 'success' && <DoneIcon color="success" />}
+              {status === 'error' && <WarningAmberOutlinedIcon color="error" />}
+              {message}
             </S.CompleteText>
             {status === 'loading' ? (
               <LoadingButton

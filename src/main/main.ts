@@ -120,7 +120,7 @@ ipcMain.on('ipc-dicom', async (event) => {
   const pythonPath = getPythonPath(os.platform());
   event.reply(
     'ipc-dicom-reply',
-    `pythonPath : ${pythonPath}, DICOMPath : ${DICOM_PATH}, ${result}`
+    `pythonPath : ${pythonPath}, DICOMPath : ${DICOM_PATH},${result}`
   );
 });
 
@@ -141,16 +141,19 @@ ipcMain.on('ipc-form', async (event) => {
     // Python 스크립트에서 print()를 호출할 때마다 여기가 실행됩니다.
     console.log('Python Output:', message);
     // Electron 렌더러 프로세스로 메시지 전송
-    event.reply('ipc-form-reply', message);
+    event.reply('ipc-form-reply', { code: 'none', message });
   });
 
   pythonShell.end((err, code, signal) => {
     if (err) {
-      console.error('PythonShell Error:', err);
-      event.reply('ipc-form-reply', JSON.stringify(err));
+      console.error('PythonShell Error:', err, code);
+      event.reply('ipc-form-reply', { code, message: JSON.stringify(err) });
     } else {
       console.log('PythonShell Finished:', { code, signal });
-      event.reply('ipc-form-reply', 'success');
+      event.reply('ipc-form-reply', {
+        code,
+        message: 'Complete Dicom Deidentification (check your directory)',
+      });
     }
   });
 });
