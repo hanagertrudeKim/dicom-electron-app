@@ -227,7 +227,7 @@ def parse_series_description(series_description: str) -> str:
     series_description = series_description.lstrip()
     series_description = series_description.rstrip()
     series_description = series_description.replace(".", "P")
-    series_description = re.sub("\W+", "_", series_description)
+    series_description = re.sub(r"\W+", "_", series_description)
     return series_description
 
 
@@ -316,8 +316,8 @@ def main(src_path):
     # 작업이 실패하면 종료 코드 'error'을 반환
     return "error"
 
-print(sys.argv[1])
 if len(sys.argv) > 1:
+    print(sys.argv[1])
     folderPath = sys.argv[1]
     main(folderPath)
 

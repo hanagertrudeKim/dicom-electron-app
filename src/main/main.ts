@@ -120,9 +120,7 @@ ipcMain.on('ipc-dicom', async (event) => {
   const pythonPath = getPythonPath(os.platform());
   event.reply(
     'ipc-dicom-reply',
-    `pythonPath : ${fs.existsSync(pythonPath)}, DICOMPath : ${fs.existsSync(
-      DICOM_PATH
-    )} ${result}`
+    `pythonPath : ${pythonPath}, DICOMPath : ${DICOM_PATH}, ${result}`
   );
 });
 
