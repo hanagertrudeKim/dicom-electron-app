@@ -43,6 +43,37 @@ async function selectFolder() {
   return folderPath;
 }
 
+// 사용자의 dicom 폴더에 대한 권한을 확인하고, 필요하다면 권한을 부여하는 함수
+async function checkDicomFolderPermission(dicomFolderPath: string) {
+  try {
+    // 폴더의 권한 확인
+    const stats = await fs.promises.stat(dicomFolderPath);
+    const hasPermission =
+      // eslint-disable-next-line no-bitwise
+      stats.mode & fs.constants.R_OK && stats.mode & fs.constants.W_OK;
+
+    if (!hasPermission) {
+      // 권한이 없다면 사용자에게 권한을 요청
+      const { response } = await dialog.showMessageBox(mainWindow, {
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        defaultId: 0,
+        title: 'Permission Request',
+        message:
+          'This app needs access to your dicom folder. Do you want to grant access?',
+      });
+
+      if (response === 0) {
+        // 사용자가 'Yes'를 클릭하면 권한 부여
+        await fs.promises.chmod(dicomFolderPath, '755');
+        console.log('Permissions granted successfully');
+      }
+    }
+  } catch (err) {
+    console.error('Error checking or setting permissions:', err);
+  }
+}
+
 const DICOM_PATH = app.isPackaged
   ? path.join(process.resourcesPath, 'backend/dicom_deidentifier.py')
   : path.join(__dirname, '../../backend/dicom_deidentifier.py');
@@ -95,7 +126,9 @@ ipcMain.on('ipc-dicom', async (event) => {
   );
 });
 
-ipcMain.on('ipc-form', (event) => {
+ipcMain.on('ipc-form', async (event) => {
+  await checkDicomFolderPermission(folderPath);
+
   const pythonPath = getPythonPath(os.platform());
 
   const options = {
